@@ -17,9 +17,9 @@ class WorkingPile():
         # validation of proper move before func is called in parent class
         if card not in self.card:
             return Status.INVALID_MOVE
-        index = self.cards.index(card)
-        removed = self.cards[index:]
-        self.cards = self.cards[:index]
+        idx = self.cards.index(card)
+        removed = self.cards[idx:]
+        self.cards = self.cards[:idx]
         return removed
     
     def put_card(self, card):
