@@ -21,15 +21,14 @@ class DrawPile():
             self.faceUp.insert(0, self.faceDown.pop())
             num_flipped += 1
         
-        return self.get_top_three()
-        
+        return self.get_top_three() 
+            
     def get_top_three(self):
         num_checked = 0
         top_three = []
         while len(self.faceUp) != 0 and num_checked < 3: 
             top_three.append(self.faceUp[num_checked])
             num_checked += 1
-        
         return top_three
 
     def take_card(self): 

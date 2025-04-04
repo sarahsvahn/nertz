@@ -18,3 +18,8 @@ class Card():
     def get_value(self):
         return self.value
         
+    # def print(self):
+    #     print(f"{self.suit}{self.value}")
+
+    def __repr__(self):
+        return f"{self.value}{self.suit[0]}"

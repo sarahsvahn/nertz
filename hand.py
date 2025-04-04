@@ -20,4 +20,21 @@ class Hand():
             for j in range(4):
                 deck.append(Card(Suit(j).name, i))
         return deck 
+    
+    def shuffle(self):
+        self.draw_pile.shuffle_cards()
 
+    def draw(self): 
+        return self.draw_pile.draw_three()
+
+    def top_nertz(self):
+        return self.nertz_pile[-1]
+    
+    def get_wp(self, idx): 
+        return self.working_piles[idx]
+    
+    def get_top3(self): 
+        return self.draw_pile.get_top_three()
+
+    # def get_draw_pile(self):
+    #     return self.draw_pile
