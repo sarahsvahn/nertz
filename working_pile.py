@@ -28,8 +28,21 @@ class WorkingPile():
             self.cards = cards
             return Status.SUCCESS
         top = self.cards[-1]
-        if top.color != cards[0].color and (top.value - 1) == cards[0].value:
+        print(type(cards[0]))
+        if top.next_wp(cards[0]):
             self.cards += cards
             return Status.SUCCESS
         return Status.INVALID_MOVE
+    
+    def get_top_card(self):
+        if len(self.cards) == 0:
+            return Card("S", -1) # empty card 
+        return self.cards[-1]
+    
+    def in_pile(self, card):
+        print("card:", card)
+        print("cards", self.cards)
+        return card in self.cards
         
+    def __repr__(self):
+        return f"{self.cards}"

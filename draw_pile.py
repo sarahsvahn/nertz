@@ -26,7 +26,7 @@ class DrawPile():
     def get_top_three(self):
         num_checked = 0
         top_three = []
-        while len(self.faceUp) != 0 and num_checked < 3: 
+        while num_checked < len(self.faceUp) and num_checked < 3: 
             top_three.append(self.faceUp[num_checked])
             num_checked += 1
         return top_three
@@ -39,7 +39,7 @@ class DrawPile():
         if len(self.faceUp) == 0:
             return Status.EMPTY
         card = self.faceUp.pop(0)
-        return (card, self.get_top_three())
+        return (card) # TODO, used to be a tuple 
 
     def shuffle_cards(self): 
         self.faceDown = self.faceDown + self.faceUp

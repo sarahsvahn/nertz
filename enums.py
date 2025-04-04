@@ -5,12 +5,20 @@ class Color(Enum):
     BLACK = 1
 
 class Suit(Enum):
-    CLUBS = 0
-    DIAMONDS = 1
-    HEARTS = 2
-    SPADES = 3
+    C = 0
+    D = 1
+    H = 2
+    S = 3
 
 class Status(Enum):
     SUCCESS = 0
     EMPTY = 1
     INVALID_MOVE = 2
+
+class Origin(Enum):
+    WP1 = 0
+    WP2 = 1
+    WP3 = 2
+    WP4 = 3
+    NERTZ = 4
+    DRAW = 5
