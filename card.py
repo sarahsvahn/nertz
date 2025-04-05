@@ -19,20 +19,9 @@ class Card():
         return int(self.value)
 
     def __eq__(self, card):
-        # print("suit equality")
-        # print(self.suit == card.get_suit())
-        # print("value eq")
-        # print(self.value == card.get_value())
         return (self.suit == card.get_suit() and int(self.value) == int(card.get_value()))
-
-    # def card_equal(self, card):
-    #     return self.value == card.get_value() and self.suit == card.get_suit()
     
     def next_wp(self, card):
-        # print(self.value)
-        # print(self.color)
-        # print(card.get_value())
-        # print(card.get_color())xw
         return self.value == card.get_value() + 1 and self.color != card.get_color()
 
     def next_cp(self, card):

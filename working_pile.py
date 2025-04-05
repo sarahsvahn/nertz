@@ -28,7 +28,6 @@ class WorkingPile():
             self.cards = cards
             return Status.SUCCESS
         top = self.cards[-1]
-        print(type(cards[0]))
         if top.next_wp(cards[0]):
             self.cards += cards
             return Status.SUCCESS
@@ -40,8 +39,6 @@ class WorkingPile():
         return self.cards[-1]
     
     def in_pile(self, card):
-        print("card:", card)
-        print("cards", self.cards)
         return card in self.cards
         
     def __repr__(self):

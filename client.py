@@ -60,8 +60,8 @@ def print_board(hand, print_mutex):
     # wp3: [Cards]
     # wp4: [Cards]
     # top3: [Card, Card, Card]
-    with print_mutex: 
-        print("[Name]'s Hand:")
+    with print_mutex:
+        print("[Name]'s HAND:")
         print(f"nertz:  {hand.top_nertz()}")
         print(f"wp1:    {hand.get_wp(0)}")
         print(f"wp2:    {hand.get_wp(1)}")
