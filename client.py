@@ -1,19 +1,44 @@
 import requests
 from hand import Hand
 import threading
+import socketio
+
+sio = socketio.Client()
+
+server_url = "http://localhost:5000"
+
+hand = Hand()
+print_mutex = threading.Lock()
 
 def main():
-    hand = Hand()
-    print_mutex = threading.Lock()
-    query_loop(hand, print_mutex)
+    # query_loop(hand, print_mutex)
 
-    # server_url = "http://localhost:5000/message"
-    # message_data = {"message": "Hello, Flask!"}
-
+    # message_data = {"message": "player_join"}
     # response = requests.post(server_url, json=message_data)
     # print("Server response:", response.json())
 
-def query_loop(hand, print_mutex): 
+    sio.connect(server_url)
+    print("Connected to server")
+
+    establish_player()
+
+    # query_loop(hand, print_mutex)
+    
+    # sio.wait()
+
+
+def establish_player():
+    name = input("Welcome to Nertz!\nEnter your name: ")
+    sio.emit("player_join", {"name": name})
+    sio.wait()
+
+@sio.on("game_joined")
+def handle_game_joined(data):
+    print("Hello", data.get("name"))
+    sio.wait()
+
+@sio.on("start_game")
+def query_loop(): 
     print_board(hand, print_mutex)
     query = input("> ").lower()
     while query != "exit": 
@@ -30,10 +55,15 @@ def query_loop(hand, print_mutex):
             print("Invalid query. USAGE: todo") 
         else: 
             query = query.split()
-            if query[0] == 'm' and len(query) == 3 and ("cp" in query[2] or "wp" in query[2]): 
-                print("MOVE")
-                result = hand.move(query[1], query[2])
-                print(result)
+            if query[0] == 'm' and len(query) == 3:
+                if "cp" in query[2]:
+                    sio.emit('cp_move', {'card': query[1], 'pile': query[2]})
+                elif "wp" in query[2]: 
+                    print("MOVE WP")
+                    result = hand.move_to_wp(query[1], query[2])
+                    print(result)
+                else: 
+                    print("Invalid query. USAGE: todo") 
                 #todo print 
             elif query == ['d']: 
                 hand.draw()

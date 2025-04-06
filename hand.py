@@ -40,7 +40,7 @@ class Hand():
     def get_top3(self): 
         return self.draw_pile.get_top_three()
     
-    def move(self, card_name, pile):
+    def move_to_wp(self, card_name, pile):
         print(card_name[-1].upper())
         card = Card(card_name[-1].upper(), card_name[:-1])
         # check that move could be valid 
