@@ -9,7 +9,7 @@ game = Game(num_players)
 mutex = threading.Lock()
 players = []
 
-app = Flask(__name__)
+app = Flask(__name__) # TODO why do we have this again
 app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app, cors_allowed_origins="*")
 
