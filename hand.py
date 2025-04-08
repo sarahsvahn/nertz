@@ -22,7 +22,7 @@ class Hand():
         for i in range(1, 14):
             for j in range(4):
                 deck.append(Card(Suit(j).name, i))
-        random.shuffle(deck)
+        # random.shuffle(deck) #TODO Add back in when ready
         return deck 
     
     def shuffle(self):
@@ -39,6 +39,19 @@ class Hand():
     
     def get_top3(self): 
         return self.draw_pile.get_top_three()
+    
+    def find_og_location(self, card, pile):
+        if card == self.top_nertz(): 
+            return Origin.NERTZ
+        elif len(self.get_top3()) > 0 and card == self.get_top3()[0]: 
+            return Origin.DRAW
+        else:
+            for index, working_pile in enumerate(self.working_piles): 
+                if pile == "WP" and working_pile.in_pile(card):
+                    return list(Origin)[index]
+                elif pile == "CP" and working_pile.top_card(card):
+                    return list(Origin)[index]
+        return Origin.NOT_FOUND
     
     def move_to_wp(self, card_name, pile):
         print(card_name[-1].upper())

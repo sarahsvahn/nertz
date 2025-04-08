@@ -1,7 +1,9 @@
-import requests
+# import requests
 from hand import Hand
 import threading
 import socketio
+from enums import Status, Origin
+from card import Card
 
 sio = socketio.Client()
 
@@ -37,6 +39,14 @@ def handle_game_joined(data):
     print("Hello", data.get("name"))
     sio.wait()
 
+@sio.on("cp_move_result")
+def cp_move_result(data):
+    print(data)
+    # if Status[data.get["status"]] == Status.Success:
+    #     hand.data.get["card"]
+    # else: 
+        # invalid move to CP 
+
 @sio.on("start_game")
 def query_loop(): 
     print_board(hand, print_mutex)
@@ -47,17 +57,23 @@ def query_loop():
         #   m 2D cp1
         #   m 2D wp3
         #   m 4D wp2 // this moves multiple cards if 4D isn't top card
+        #   m 1D cp
         # d  // flips next top 3 from draw pile
         # s  // says "i want to shuffle"
-
         # put query loop and waiting for print loop in two threads (#concurrency)
+
         if len(query) == 0: 
             print("Invalid query. USAGE: todo") 
         else: 
             query = query.split()
             if query[0] == 'm' and len(query) == 3:
+                # TODO validate card, make sure 1D not D1 (maybe here?)
                 if "cp" in query[2]:
-                    sio.emit('cp_move', {'card': query[1], 'pile': query[2]})
+                    origin = hand.find_og_location(Card(query[1][-1], int(query[1][:-1])), "CP")
+                    if origin != Origin.NOT_FOUND:
+                        sio.emit('cp_move', {'card': query[1], 'pile': query[2], "origin": origin.name})
+                    else:
+                        print("Invalid move")
                 elif "wp" in query[2]: 
                     print("MOVE WP")
                     result = hand.move_to_wp(query[1], query[2])
@@ -69,6 +85,7 @@ def query_loop():
                 hand.draw()
             elif query == ['s']:
                 hand.shuffle()
+                # todo 
             else: 
                 print("Invalid query. USAGE: todo") 
         

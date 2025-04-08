@@ -34,6 +34,10 @@ def join_game(data):
 @socketio.on("cp_move")
 def cp_move(data):
     print(data)
+    card = data.get("card")
+    pile = data.get("pile")
+    result = game.cp_move(card, pile)
+    emit("cp_move_result", {"status": result.name, "card": card, "origin": data.get("origin")})
 
 # @app.route('/message', methods=['POST'])
 # def receive_message():

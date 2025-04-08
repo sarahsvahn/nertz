@@ -11,8 +11,9 @@ class CommunityPile():
         return self.cards[-1]
         
     def add_to_pile(self, card):
-        if self.get_top_card().next_cp(card):
-            self.cards.append(card)
-            return Status.SUCCESS
-        else:
-            return Status.INVALID_MOVE
+        with self.pile_lock:
+            if self.get_top_card().next_cp(card):
+                self.cards.append(card)
+                return Status.SUCCESS
+            else:
+                return Status.INVALID_MOVE

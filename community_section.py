@@ -17,9 +17,16 @@ class CommunitySection():
     def add_to_pile(self, card, pile_name="new_pile"):
         if card.get_value() == 1:
             self.start_new_pile(card)
+            return Status.SUCCESS
         else: 
-            pile_idx = int(pile_name[-1]) - 1
-            self.piles[pile_idx].add_to_pile(card)
+            if pile_name[-1].isdigit:
+                pile_idx = int(pile_name[-1]) - 1
+            else:
+                return Status.INVALID_MOVE
+            # if self.piles[pile_idx].get_top_card().next_cp(card): #TODO keep for higher concurrency?
+            return self.piles[pile_idx].add_to_pile(card)
+            # else:
+            #     return Status.INVALID_MOVE
 
     def get_board(self): # think about printing unupdated data, would have to lock whole CS
         top_cards = []

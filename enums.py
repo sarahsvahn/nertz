@@ -22,3 +22,4 @@ class Origin(Enum):
     WP4 = 3
     NERTZ = 4
     DRAW = 5
+    NOT_FOUND = 6
