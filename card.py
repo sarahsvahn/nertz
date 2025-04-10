@@ -9,7 +9,11 @@ class Card():
             self.color = Color.RED
         else: 
             self.color = Color.BLACK
-            
+
+    @classmethod
+    def card_with_name(cls, name): 
+        return cls(name[-1].upper(), int(name[:-1]))
+     
     def get_color(self):
         return self.color
     

@@ -17,6 +17,11 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 def handle_connect():
     print("A client connected!")
     
+# @socketio.on("before_print")
+# def respond():
+#     print("GOT THIS")
+#     emit("ready_to_print")
+
 @socketio.on("player_join")
 def join_game(data):
     print(data)

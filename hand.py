@@ -49,11 +49,11 @@ class Hand():
             for index, working_pile in enumerate(self.working_piles): 
                 if pile == "WP" and working_pile.in_pile(card):
                     return list(Origin)[index]
-                elif pile == "CP" and working_pile.top_card(card):
+                elif pile == "CP" and working_pile.get_top_card() == card:
                     return list(Origin)[index]
         return Origin.NOT_FOUND
     
-    def move_to_wp(self, card_name, pile):
+    def move_to_wp(self, card_name, pile): # TODO refactor this function to use find_og_location
         print(card_name[-1].upper())
         card = Card(card_name[-1].upper(), card_name[:-1])
         # check that move could be valid 
@@ -92,3 +92,14 @@ class Hand():
             working_pile.put_cards(new_cards)
         # elif pile[:-1] == "cp" TODO 
             #send message to community pile to put cards 
+
+    def remove_from_origin(self, card, origin):
+        if origin == Origin.NERTZ:
+            self.nertz_pile.pop(-1)
+        elif origin == Origin.DRAW:
+            self.draw_pile.take_card()
+        else: 
+            self.working_piles[origin.value].remove_top_card()
+
+    def has_nertz(self):
+        return len(self.nertz_pile) == 0

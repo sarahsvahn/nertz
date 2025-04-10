@@ -7,6 +7,8 @@ from card import Card
 
 sio = socketio.Client()
 
+cp_move_done = threading.Event()
+
 server_url = "http://localhost:5000"
 
 hand = Hand()
@@ -34,18 +36,25 @@ def establish_player():
     sio.emit("player_join", {"name": name})
     sio.wait()
 
+
 @sio.on("game_joined")
 def handle_game_joined(data):
     print("Hello", data.get("name"))
     sio.wait()
 
+
 @sio.on("cp_move_result")
 def cp_move_result(data):
-    print(data)
-    # if Status[data.get["status"]] == Status.Success:
-    #     hand.data.get["card"]
-    # else: 
-        # invalid move to CP 
+    if Status[data.get("status")] == Status.SUCCESS:
+        remove_location = data.get("origin")
+        card = Card.card_with_name(data.get("card")) # TODO make this a function in card class 
+        hand.remove_from_origin(card, Origin[remove_location])
+    else: 
+        print("Move failed. RIPPPPP that sucks.")
+
+    cp_move_done.set()
+    # sio.emit("before_print")
+    # sio.wait()
 
 @sio.on("start_game")
 def query_loop(): 
@@ -69,9 +78,13 @@ def query_loop():
             if query[0] == 'm' and len(query) == 3:
                 # TODO validate card, make sure 1D not D1 (maybe here?)
                 if "cp" in query[2]:
-                    origin = hand.find_og_location(Card(query[1][-1], int(query[1][:-1])), "CP")
+                    # origin = hand.find_og_location(Card(query[1][-1], int(query[1][:-1])), "CP")
+                    print(query[1])
+                    origin = hand.find_og_location(Card.card_with_name(query[1]), "CP")
                     if origin != Origin.NOT_FOUND:
+                        cp_move_done.clear()
                         sio.emit('cp_move', {'card': query[1], 'pile': query[2], "origin": origin.name})
+                        cp_move_done.wait()
                     else:
                         print("Invalid move")
                 elif "wp" in query[2]: 
@@ -88,10 +101,12 @@ def query_loop():
                 # todo 
             else: 
                 print("Invalid query. USAGE: todo") 
-        
+
+        # sio.wait()
         print_board(hand, print_mutex)           
         query = input("> ").lower()
-    
+
+
 def print_board(hand, print_mutex):
     # [name] added 1D to cp2
     # COMMUNITY SECTION
