@@ -1,4 +1,3 @@
-# import requests
 from hand import Hand
 import threading
 import socketio
@@ -19,19 +18,20 @@ name = ""
 input_win = None
 community_win = None 
 hand_win = None
-
+error_win = None
 def main(stdscr):
-    global input_win, community_win, hand_win
+    global input_win, community_win, hand_win, error_win
     
     stdscr.clear()
     curses.curs_set(1) # show cursor ? 
     curses.echo()
     height, width = stdscr.getmaxyx()
     input_height = 3
-    output_height = height - input_height
+    output_height = height - input_height * 2
     hand_win = curses.newwin(output_height, int(width / 2), 0, 0)
     community_win = curses.newwin(output_height, int(width / 2), 0, int(width / 2))
-    input_win = curses.newwin(input_height, width, output_height, 0)
+    input_win = curses.newwin(input_height, width, output_height + 3, 0)
+    error_win = curses.newwin(input_height, width, output_height, 0)
 
     input_win.border()
     input_win.refresh()
@@ -42,22 +42,13 @@ def main(stdscr):
     hand_win.border()
     hand_win.refresh()
 
-
-    # query_loop(hand, print_mutex)
-
-    # message_data = {"message": "player_join"}
-    # response = requests.post(server_url, json=message_data)
-    # print("Server response:", response.json())
+    error_win.border()
+    error_win.addstr(1, 1, "Errors:")
+    error_win.refresh()
 
     sio.connect(server_url)
-    # print("Connected to server")
 
     establish_player()
-
-    # query_loop(hand, print_mutex)
-
-# curses.wrapper(main)
-
 
 def establish_player():
     global name, input_win
@@ -66,26 +57,26 @@ def establish_player():
     input_win.clear()
     input_win.border()
     input_win.refresh()
-    # name = input_win.getstr(1, 8, 60) #decode("utf-8")
-    # name = input("Welcome to Nertz!\nEnter your name: ")
     sio.emit("player_join", {"name": name})
     sio.wait()
 
 @sio.on("game_joined")
 def handle_game_joined(data):
-    # input_win.addstr(1, 1, f"Hello {data.get('name')}")
     sio.wait()
 
 @sio.on("cp_move_result")
 def cp_move_result(data):
+    global error_win
     if Status[data.get("status")] == Status.SUCCESS:
         remove_location = data.get("origin")
-        card = Card.card_with_name(data.get("card")) # TODO make this a function in card class 
+        card = Card.card_with_name(data.get("card")) 
         hand.remove_from_origin(card, Origin[remove_location])
     else: 
-        print("Move failed. RIPPPPP that sucks.")
+        error_win.addstr(1, 1, "Move failed. RIPPPPP that sucks.")
+        error_win.refresh()
 
     cp_move_done.set()
+
 
 @sio.on("cs_updated")
 def update_cs(data):
@@ -97,77 +88,62 @@ def update_cs(data):
     board = data.get("board").split("\n")
     for i, line in enumerate(board): 
         community_win.addstr(i + 1, 1, line)
-    
+        
     community_win.refresh()
 
 @sio.on("start_game")
 def query_loop(): 
+    global error_win, input_win, name
+
     print_board(hand, print_mutex)
     input_win.addstr(1, 1, "> ")
+    input_win.refresh()
     query = input_win.getstr().decode("utf-8").lower()
-    # query = input("> ").lower()
     while query != "exit": 
+        error_win.clear()
+        error_win.border()
+        error_win.refresh()
         if len(query) == 0: 
-            hand_win.addstr("Invalid query. USAGE: todo") 
+            error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s")
+            error_win.refresh()
         else: 
             query = query.split()
             if query[0] == 'm' and len(query) == 3:
                 # TODO validate card, make sure 1D not D1 (maybe here?)
                 if "cp" in query[2]:
-                    # origin = hand.find_og_location(Card(query[1][-1], int(query[1][:-1])), "CP")
-                    # hand_win.addstr(query[1])
                     origin = hand.find_og_location(Card.card_with_name(query[1]), "CP")
                     if origin != Origin.NOT_FOUND:
                         cp_move_done.clear()
-                        sio.emit('cp_move', {'card': query[1], 'pile': query[2], "origin": origin.name})
+                        sio.emit('cp_move', {'card': query[1], 'pile': query[2], "name": name, "origin": origin.name})
                         cp_move_done.wait()
                     else:
-                        print("Invalid move")
+                        error_win.addstr(1, 1, "Invalid move")
+                        error_win.refresh()
                 elif "wp" in query[2]: 
-                    # hand_win.addstr("MOVE WP")
-                    # result = hand.move_to_wp(query[1], query[2])
                     hand.move_to_wp(query[1], query[2])
-                    # hand_win.addstr(result)
                 else: 
-                    hand_win.addstr("Invalid query. USAGE: todo") 
-                #todo print 
+                    error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
+                    error_win.refresh()
             elif query == ['d']: 
                 hand.draw()
             elif query == ['s']:
                 hand.shuffle()
-                # todo 
+                # TODO 
             else: 
-                hand_win.addstr("Invalid query. USAGE: todo") 
+                error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
+                error_win.refresh()
 
-        # sio.wait()
         print_board(hand, print_mutex)  
         
         input_win.clear()
         input_win.border()
-        input_win.refresh()         
-        
         input_win.addstr(1, 1, "> ")
-        query = input_win.getstr().decode("utf-8").lower()
- 
-    # input_win.clrtoeol() TODO 
+        input_win.refresh()         
 
+        query = input_win.getstr().decode("utf-8").lower()
 
 def print_board(hand, print_mutex):
     global hand_win
-    # [name] added 1D to cp2
-    # COMMUNITY SECTION
-    # [ 1D , Card, Card] // these are top cards
-    #   cp1   cp2   cp3
-    # [Card, Card, Card]
-    #  cp4   cp5   cp6
-
-    # [name]'s HAND:
-    # nertz: Card
-    # wp1: [Cards]
-    # wp2: [Cards]
-    # wp3: [Cards]
-    # wp4: [Cards]
-    # top3: [Card, Card, Card]
 
     with print_mutex:
         hand_win.clear()

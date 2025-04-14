@@ -42,32 +42,12 @@ def cp_move(data):
     print(data)
     card = data.get("card")
     pile = data.get("pile")
+    name = data.get("name")
     result = game.cp_move(card, pile)
     emit("cp_move_result", {"status": result.name, "card": card, "origin": data.get("origin")})
     if result == Status.SUCCESS: 
-        print(game.get_board())
-        emit("cs_updated", {"board": game.get_board()}, broadcast=True)
-
-
-# @socketio.on("get_community_section")
-# def get_cs():
-#     game.
-# @app.route('/message', methods=['POST'])
-# def receive_message():
-#     global player_count
-#     data = request.json
-#     print("Received:", data)
-
-#     # {"message": "player_join" }
-#     # {"message": "move", "card": "[Card]"}
-
-#     message = data.get("message")
-
-#     return jsonify({"reply": reply})
-#     # data = request.json
-#     # print("Received:", data)
-#     # response = {"reply": f"Echo: {data['message']}"}
-#     # return jsonify(response)
+        print(game.get_board(name, card, pile))
+        emit("cs_updated", {"board": game.get_board(name, card, pile)}, broadcast=True)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

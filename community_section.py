@@ -28,7 +28,7 @@ class CommunitySection():
             # else:
             #     return Status.INVALID_MOVE
 
-    def get_board(self): # think about printing unupdated data, would have to lock whole CS
+    def get_board(self, name, card, pile): # think about printing unupdated data, would have to lock whole CS
         top_cards = []
         pile_names = []
         piles_count = 0
@@ -38,7 +38,7 @@ class CommunitySection():
             top_cards.append(self.piles[i].get_top_card())
             pile_names.append("cp" + str(i + 1))
         
-        to_return = f"[Name] added [card] to [pile]\nCOMMUNITY SECTION\n"
+        to_return = f"{name} added {card} to {pile}\nCOMMUNITY SECTION\n"
         cp_string = f""
         for i in range(len(top_cards)):
             if i % 4 == 0:

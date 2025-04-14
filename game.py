@@ -24,6 +24,6 @@ class Game():
         card = Card(card_name[-1].upper(), int(card_name[:-1]))
         return self.community_section.add_to_pile(card, pile_name)
     
-    def get_board(self):
-        return self.community_section.get_board()
+    def get_board(self, name, card, pile):
+        return self.community_section.get_board(name, card, pile)
 
