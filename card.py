@@ -13,6 +13,9 @@ class Card():
     @classmethod
     def card_with_name(cls, name): 
         return cls(name[-1].upper(), int(name[:-1]))
+
+    def stringify(self):
+        return str(self.value) + self.suit.name
      
     def get_color(self):
         return self.color

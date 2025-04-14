@@ -12,7 +12,7 @@ class CommunitySection():
         with self.count_mutex:
             idx = self.piles_count
             self.piles_count += 1
-            self.piles[idx] = CommunityPile(card) # update design doc to reflect this
+            self.piles[idx] = CommunityPile(card) # TODO update design doc to reflect this
 
     def add_to_pile(self, card, pile_name="new_pile"):
         if card.get_value() == 1:
@@ -45,7 +45,8 @@ class CommunitySection():
                 to_return += "[ "
                 cp_string = "  "
             
-            to_print = top_cards[i].__repr__() #this gets an fstring
+            # to_print = top_cards[i].__repr__() #this gets an fstring
+            to_print = top_cards[i].stringify()
             cp_string += pile_names[i]
             
             to_print += " "

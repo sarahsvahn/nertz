@@ -4,6 +4,7 @@ import threading
 import socketio
 from enums import Status, Origin
 from card import Card
+import curses 
 
 sio = socketio.Client()
 
@@ -14,7 +15,34 @@ server_url = "http://localhost:5000"
 hand = Hand()
 print_mutex = threading.Lock()
 
-def main():
+name = ""
+input_win = None
+community_win = None 
+hand_win = None
+
+def main(stdscr):
+    global input_win, community_win, hand_win
+    
+    stdscr.clear()
+    curses.curs_set(1) # show cursor ? 
+    curses.echo()
+    height, width = stdscr.getmaxyx()
+    input_height = 3
+    output_height = height - input_height
+    hand_win = curses.newwin(output_height, int(width / 2), 0, 0)
+    community_win = curses.newwin(output_height, int(width / 2), 0, int(width / 2))
+    input_win = curses.newwin(input_height, width, output_height, 0)
+
+    input_win.border()
+    input_win.refresh()
+
+    community_win.border()
+    community_win.refresh()
+
+    hand_win.border()
+    hand_win.refresh()
+
+
     # query_loop(hand, print_mutex)
 
     # message_data = {"message": "player_join"}
@@ -22,26 +50,31 @@ def main():
     # print("Server response:", response.json())
 
     sio.connect(server_url)
-    print("Connected to server")
+    # print("Connected to server")
 
     establish_player()
 
     # query_loop(hand, print_mutex)
-    
-    # sio.wait()
+
+# curses.wrapper(main)
 
 
 def establish_player():
-    name = input("Welcome to Nertz!\nEnter your name: ")
+    global name, input_win
+    input_win.addstr(1, 1, "Welcome to Nertz! Enter your name: ")
+    name = input_win.getstr().decode("utf-8")
+    input_win.clear()
+    input_win.border()
+    input_win.refresh()
+    # name = input_win.getstr(1, 8, 60) #decode("utf-8")
+    # name = input("Welcome to Nertz!\nEnter your name: ")
     sio.emit("player_join", {"name": name})
     sio.wait()
 
-
 @sio.on("game_joined")
 def handle_game_joined(data):
-    print("Hello", data.get("name"))
+    # input_win.addstr(1, 1, f"Hello {data.get('name')}")
     sio.wait()
-
 
 @sio.on("cp_move_result")
 def cp_move_result(data):
@@ -53,33 +86,36 @@ def cp_move_result(data):
         print("Move failed. RIPPPPP that sucks.")
 
     cp_move_done.set()
-    # sio.emit("before_print")
-    # sio.wait()
+
+@sio.on("cs_updated")
+def update_cs(data):
+    global community_win
+    
+    community_win.clear()
+    community_win.border()
+    
+    board = data.get("board").split("\n")
+    for i, line in enumerate(board): 
+        community_win.addstr(i + 1, 1, line)
+    
+    community_win.refresh()
 
 @sio.on("start_game")
 def query_loop(): 
     print_board(hand, print_mutex)
-    query = input("> ").lower()
+    input_win.addstr(1, 1, "> ")
+    query = input_win.getstr().decode("utf-8").lower()
+    # query = input("> ").lower()
     while query != "exit": 
-        # commands:
-        # m [Card] [location]  // moves card to location
-        #   m 2D cp1
-        #   m 2D wp3
-        #   m 4D wp2 // this moves multiple cards if 4D isn't top card
-        #   m 1D cp
-        # d  // flips next top 3 from draw pile
-        # s  // says "i want to shuffle"
-        # put query loop and waiting for print loop in two threads (#concurrency)
-
         if len(query) == 0: 
-            print("Invalid query. USAGE: todo") 
+            hand_win.addstr("Invalid query. USAGE: todo") 
         else: 
             query = query.split()
             if query[0] == 'm' and len(query) == 3:
                 # TODO validate card, make sure 1D not D1 (maybe here?)
                 if "cp" in query[2]:
                     # origin = hand.find_og_location(Card(query[1][-1], int(query[1][:-1])), "CP")
-                    print(query[1])
+                    # hand_win.addstr(query[1])
                     origin = hand.find_og_location(Card.card_with_name(query[1]), "CP")
                     if origin != Origin.NOT_FOUND:
                         cp_move_done.clear()
@@ -88,11 +124,12 @@ def query_loop():
                     else:
                         print("Invalid move")
                 elif "wp" in query[2]: 
-                    print("MOVE WP")
-                    result = hand.move_to_wp(query[1], query[2])
-                    print(result)
+                    # hand_win.addstr("MOVE WP")
+                    # result = hand.move_to_wp(query[1], query[2])
+                    hand.move_to_wp(query[1], query[2])
+                    # hand_win.addstr(result)
                 else: 
-                    print("Invalid query. USAGE: todo") 
+                    hand_win.addstr("Invalid query. USAGE: todo") 
                 #todo print 
             elif query == ['d']: 
                 hand.draw()
@@ -100,14 +137,23 @@ def query_loop():
                 hand.shuffle()
                 # todo 
             else: 
-                print("Invalid query. USAGE: todo") 
+                hand_win.addstr("Invalid query. USAGE: todo") 
 
         # sio.wait()
-        print_board(hand, print_mutex)           
-        query = input("> ").lower()
+        print_board(hand, print_mutex)  
+        
+        input_win.clear()
+        input_win.border()
+        input_win.refresh()         
+        
+        input_win.addstr(1, 1, "> ")
+        query = input_win.getstr().decode("utf-8").lower()
+ 
+    # input_win.clrtoeol() TODO 
 
 
 def print_board(hand, print_mutex):
+    global hand_win
     # [name] added 1D to cp2
     # COMMUNITY SECTION
     # [ 1D , Card, Card] // these are top cards
@@ -122,14 +168,22 @@ def print_board(hand, print_mutex):
     # wp3: [Cards]
     # wp4: [Cards]
     # top3: [Card, Card, Card]
+
     with print_mutex:
-        print("[Name]'s HAND:")
-        print(f"nertz:  {hand.top_nertz()}")
-        print(f"wp1:    {hand.get_wp(0)}")
-        print(f"wp2:    {hand.get_wp(1)}")
-        print(f"wp3:    {hand.get_wp(2)}")
-        print(f"wp4:    {hand.get_wp(3)}")
-        print(f"top3:   {hand.get_top3()}")
+        hand_win.clear()
+        hand_win.border()
+
+        hand_win.addstr(1, 1, f"{name}'s HAND:")
+        hand_win.addstr(2, 1, f"nertz:  {hand.top_nertz()}")
+        hand_win.addstr(3, 1, f"wp1:    {hand.get_wp(0)}")
+        hand_win.addstr(4, 1, f"wp2:    {hand.get_wp(1)}")
+        hand_win.addstr(5, 1, f"wp3:    {hand.get_wp(2)}")
+        hand_win.addstr(6, 1, f"wp4:    {hand.get_wp(3)}")
+        hand_win.addstr(7, 1, f"top3:   {hand.get_top3()}")
+
+        hand_win.refresh()         
+
+curses.wrapper(main)
 
 if __name__ == "__main__":
     main()

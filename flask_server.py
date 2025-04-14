@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit
 from game import Game
 import threading
+from enums import Status
 
 app = Flask(__name__)
 num_players = int(input("Number of players: "))
@@ -43,7 +44,14 @@ def cp_move(data):
     pile = data.get("pile")
     result = game.cp_move(card, pile)
     emit("cp_move_result", {"status": result.name, "card": card, "origin": data.get("origin")})
+    if result == Status.SUCCESS: 
+        print(game.get_board())
+        emit("cs_updated", {"board": game.get_board()}, broadcast=True)
 
+
+# @socketio.on("get_community_section")
+# def get_cs():
+#     game.
 # @app.route('/message', methods=['POST'])
 # def receive_message():
 #     global player_count
