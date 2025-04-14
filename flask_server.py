@@ -49,5 +49,15 @@ def cp_move(data):
         print(game.get_board(name, card, pile))
         emit("cs_updated", {"board": game.get_board(name, card, pile)}, broadcast=True)
 
+@socketio.on("has_nertz")
+def game_over(): 
+    emit("get_scores", {}, broadcast=True)
+
+@socketio.on("my_score")
+def get_player_score(data):
+    name = data.get("name")
+    score = data.get("score")
+    game.set_score(name, score)
+
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

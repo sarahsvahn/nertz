@@ -19,8 +19,9 @@ input_win = None
 community_win = None 
 hand_win = None
 error_win = None
+
 def main(stdscr):
-    global input_win, community_win, hand_win, error_win
+    global input_win, community_win, hand_win, error_win, hand
     
     stdscr.clear()
     curses.curs_set(1) # show cursor ? 
@@ -51,7 +52,7 @@ def main(stdscr):
     establish_player()
 
 def establish_player():
-    global name, input_win
+    global name, input_win, hand
     input_win.addstr(1, 1, "Welcome to Nertz! Enter your name: ")
     name = input_win.getstr().decode("utf-8")
     input_win.clear()
@@ -60,13 +61,18 @@ def establish_player():
     sio.emit("player_join", {"name": name})
     sio.wait()
 
+@sio.on("send_scores")
+def send_score(data):
+    global name, hand
+    sio.emit("my_score", {"score": hand.get_score(), "name": name})
+
 @sio.on("game_joined")
 def handle_game_joined(data):
     sio.wait()
 
 @sio.on("cp_move_result")
 def cp_move_result(data):
-    global error_win
+    global error_win, hand
     if Status[data.get("status")] == Status.SUCCESS:
         remove_location = data.get("origin")
         card = Card.card_with_name(data.get("card")) 
@@ -93,9 +99,9 @@ def update_cs(data):
 
 @sio.on("start_game")
 def query_loop(): 
-    global error_win, input_win, name
+    global error_win, input_win, name, hand
 
-    print_board(hand, print_mutex)
+    print_board(print_mutex)
     input_win.addstr(1, 1, "> ")
     input_win.refresh()
     query = input_win.getstr().decode("utf-8").lower()
@@ -104,8 +110,7 @@ def query_loop():
         error_win.border()
         error_win.refresh()
         if len(query) == 0: 
-            error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s")
-            error_win.refresh()
+            error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
         else: 
             query = query.split()
             if query[0] == 'm' and len(query) == 3:
@@ -114,27 +119,30 @@ def query_loop():
                     origin = hand.find_og_location(Card.card_with_name(query[1]), "CP")
                     if origin != Origin.NOT_FOUND:
                         cp_move_done.clear()
-                        sio.emit('cp_move', {'card': query[1], 'pile': query[2], "name": name, "origin": origin.name})
+                        sio.emit("cp_move", {'card': query[1], 'pile': query[2], "name": name, "origin": origin.name})
                         cp_move_done.wait()
                     else:
                         error_win.addstr(1, 1, "Invalid move")
-                        error_win.refresh()
                 elif "wp" in query[2]: 
                     hand.move_to_wp(query[1], query[2])
                 else: 
                     error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
-                    error_win.refresh()
             elif query == ['d']: 
                 hand.draw()
             elif query == ['s']:
                 hand.shuffle()
                 # TODO 
+            elif query == ['nertz']:
+                if hand.has_nertz():
+                    sio.emit("has_nertz")
+                else: 
+                    error_win.addstr(1, 1, "Your nertz pile is not empty. Keep playing.")
             else: 
                 error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
                 error_win.refresh()
 
-        print_board(hand, print_mutex)  
-        
+        print_board(print_mutex)  
+        error_win.refresh()
         input_win.clear()
         input_win.border()
         input_win.addstr(1, 1, "> ")
@@ -142,8 +150,8 @@ def query_loop():
 
         query = input_win.getstr().decode("utf-8").lower()
 
-def print_board(hand, print_mutex):
-    global hand_win
+def print_board(print_mutex):
+    global hand_win, hand
 
     with print_mutex:
         hand_win.clear()
