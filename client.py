@@ -86,16 +86,17 @@ def cp_move_result(data):
 
 @sio.on("cs_updated")
 def update_cs(data):
-    global community_win
-    
-    community_win.clear()
-    community_win.border()
-    
-    board = data.get("board").split("\n")
-    for i, line in enumerate(board): 
-        community_win.addstr(i + 1, 1, line)
+    global community_win, print_mutex
+
+    with print_mutex:
+        community_win.clear()
+        community_win.border()
         
-    community_win.refresh()
+        board = data.get("board").split("\n")
+        for i, line in enumerate(board): 
+            community_win.addstr(i + 1, 1, line)
+            
+        community_win.refresh()
 
 @sio.on("start_game")
 def query_loop(): 

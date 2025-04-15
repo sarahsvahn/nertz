@@ -66,7 +66,7 @@ class Hand():
             #send message to community pile to inquire about valiidity, set `valid`
             # check that it's coming from the top of something (ie not a chunk from a wp)
         if not valid: 
-            print("invalid move")
+            print("invalid move") # TODO print to a window 
             return Status.INVALID_MOVE
         # check that card is available to move
         new_cards = -1
@@ -81,7 +81,6 @@ class Hand():
             for index, working_pile in enumerate(self.working_piles): 
                 if working_pile.in_pile(card):
                     new_cards = working_pile.remove_cards(card)
-                    print(new_cards)
                     og_location = list(Origin)[index]
         if new_cards == -1: # can't find card
             return Status.INVALID_MOVE
