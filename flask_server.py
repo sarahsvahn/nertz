@@ -9,6 +9,7 @@ num_players = int(input("Number of players: "))
 game = Game(num_players)
 mutex = threading.Lock()
 players = []
+players_joined = 0
 
 app = Flask(__name__) # TODO why do we have this again
 app.config["SECRET_KEY"] = "secret!"
@@ -29,9 +30,13 @@ def join_game(data):
             print("about to emit start")
             emit("start_game", broadcast=True)
 
-# @socketio.on("start_game")
-# def start_game(data):
-#     print(data)
+@socketio.on("player_rejoin")
+def rejoin_game(data): 
+    players_joined += 1
+    if players_joined == num_players:
+        print("about to emit start again")
+        emit("start_game", broadcast=True)
+        players_joined = 0
 
 @socketio.on("cp_move")
 def cp_move(data):
@@ -54,7 +59,13 @@ def game_over():
 def get_player_score(data):
     name = data.get("name")
     score = data.get("score")
-    game.set_score(name, score)
+    result = game.set_score(name, score)
+    scores = game.get_scores()
+    if result: # all scores updated
+        if any(value > 100 for value in scores.values()):
+            emit("game_over", {"scores": scores}, broadcast=True)
+        else: 
+            emit("reset", {"scores": scores}, broadcast=True)
     print(name, " ", score)
 
 if __name__ == '__main__':

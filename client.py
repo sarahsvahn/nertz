@@ -20,6 +20,8 @@ community_win = None
 hand_win = None
 error_win = None
 
+continue_loop = True #TODO this needs a mutex 
+
 def main(stdscr):
     global input_win, community_win, hand_win, error_win, hand
     
@@ -100,9 +102,49 @@ def update_cs(data):
     with print_mutex:  
         community_win.refresh()
 
+@sio.on("reset")
+def reset(data): 
+    global continue_loop
+    continue_loop = False
+    scores = data.get("scores")
+    print_scores(scores)
+    hand.reset_hand()
+    input_win.clear()
+    input_win.border()
+    input_win.addstr(1, 1, "Enter any key to start the next round: ")
+    with print_mutex:
+        input_win.refresh() 
+    query = input_win.getstr().decode("utf-8").lower()
+    if query:
+        sio.emit("player_rejoin")
+           
+@sio.on("game_over")
+def game_over(data): 
+    global continue_loop
+    continue_loop = False
+    scores = data.get("scores")
+    print_scores(scores)
+    winner = min(scores, key=scores.get)
+    community_win.clear()
+    community_win.border()
+    community_win.addstr(len(scores) + 1, 1, f"{winner} is the winner!")
+    with print_mutex: 
+        community_win.refresh()
+
+def print_scores(scores):
+    global community_win, print_mutex
+    community_win.clear()
+    community_win.border()
+    for i, player in enumerate(scores):
+        community_win.addstr(i + 1, 1, f"{player}: {scores[player]}")
+    with print_mutex: 
+        community_win.refresh()
+
 @sio.on("start_game")
 def query_loop(): 
-    global error_win, input_win, name, hand, print_mutex
+    global error_win, input_win, name, hand, print_mutex, continue_loop
+
+    continue_loop = True
 
     print_board(print_mutex)
     input_win.addstr(1, 1, "> ")
@@ -110,7 +152,7 @@ def query_loop():
     with print_mutex:
         input_win.refresh()
     query = input_win.getstr().decode("utf-8").lower()
-    while query != "exit": 
+    while query != "exit" and continue_loop: 
         error_win.clear()
         error_win.border()
         with print_mutex:

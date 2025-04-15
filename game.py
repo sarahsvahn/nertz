@@ -8,6 +8,7 @@ class Game():
         # self.scores = []
         self.scores = {}
         self.community_section = CommunitySection(self.num_players)
+        self.scores_count = 0
 
     # def initialize_game(self):
     #     self.community_section = 
@@ -29,4 +30,12 @@ class Game():
     
     def set_score(self, name, score):
         self.scores[name] = score
+        self.scores_count += 1
+        if self.scores_count == self.num_players:
+            self.scores_count = 0
+            return True
+        return False
+    
+    def get_scores(self):
+        return self.scores
 

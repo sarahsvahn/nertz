@@ -7,14 +7,7 @@ import random
 
 class Hand():
     def __init__(self): 
-        deck = Hand.generate_deck()
-        # deck2 = [Card(Suit(0).name, 12), Card(Suit(1).name, 11), Card(Suit(3).name, 10), Card(Suit(2).name, 9)]
-        # deck = deck2 + deck
-        self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
-                              WorkingPile(deck[2]), WorkingPile(deck[3])]
-        self.nertz_pile = deck[4:17]
-        self.draw_pile = DrawPile(deck[17:])
-        self.score = -26
+        self.reset_hand()
     
     @staticmethod
     def generate_deck():
@@ -24,6 +17,14 @@ class Hand():
                 deck.append(Card(Suit(j).name, i))
         # random.shuffle(deck) #TODO Add back in when ready
         return deck 
+    
+    def reset_hand(self):
+        deck = Hand.generate_deck()
+        self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
+                              WorkingPile(deck[2]), WorkingPile(deck[3])]
+        self.nertz_pile = deck[4:17]
+        self.draw_pile = DrawPile(deck[17:])
+        self.score = -26
     
     def shuffle(self):
         self.draw_pile.shuffle_cards()
@@ -60,12 +61,10 @@ class Hand():
     
     def move_to_wp(self, card_name, pile): # TODO refactor this function to use find_og_location
         print(card_name[-1].upper())
-        
         card = Card(card_name[-1].upper(), card_name[:-1])
-        # check that move could be valid 
         valid = False
         if pile[:-1] == "wp":
-            if pile[:-1].isnumeric():
+            if pile[-1].isnumeric():
                 if int(pile[-1]) <= 4:
                     top_wp_card = self.working_piles[int(pile[-1]) - 1].get_top_card()
                     if top_wp_card.get_value() == -1 or top_wp_card.next_wp(card): 
