@@ -14,6 +14,7 @@ class Status(Enum):
     SUCCESS = 0
     EMPTY = 1
     INVALID_MOVE = 2
+    INVALID_CARD = 3
 
 class Origin(Enum):
     WP1 = 0

@@ -19,7 +19,7 @@ class CommunitySection():
             self.start_new_pile(card)
             return Status.SUCCESS
         else: 
-            if pile_name[-1].isdigit:
+            if pile_name[-1].isdigit():
                 pile_idx = int(pile_name[-1]) - 1
             else:
                 return Status.INVALID_MOVE

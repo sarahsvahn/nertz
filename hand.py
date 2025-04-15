@@ -30,8 +30,13 @@ class Hand():
 
     def draw(self): 
         return self.draw_pile.draw_three()
+    
+    def get_score(self): 
+        return self.score
 
     def top_nertz(self):
+        if len(self.nertz_pile) == 0: 
+            return []
         return self.nertz_pile[-1]
     
     def get_wp(self, idx): 
@@ -55,16 +60,20 @@ class Hand():
     
     def move_to_wp(self, card_name, pile): # TODO refactor this function to use find_og_location
         print(card_name[-1].upper())
+        
         card = Card(card_name[-1].upper(), card_name[:-1])
         # check that move could be valid 
         valid = False
         if pile[:-1] == "wp":
-            top_wp_card = self.working_piles[int(pile[-1]) - 1].get_top_card()
-            if top_wp_card.get_value() == -1 or top_wp_card.next_wp(card): 
-                valid = True
-        # if pile[:-1] == "cp" TODO 
-            #send message to community pile to inquire about valiidity, set `valid`
-            # check that it's coming from the top of something (ie not a chunk from a wp)
+            if pile[:-1].isnumeric():
+                if int(pile[-1]) <= 4:
+                    top_wp_card = self.working_piles[int(pile[-1]) - 1].get_top_card()
+                    if top_wp_card.get_value() == -1 or top_wp_card.next_wp(card): 
+                        valid = True
+                else:
+                    valid = False 
+            else:
+                valid = False
         if not valid: 
             print("invalid move") # TODO print to a window 
             return Status.INVALID_MOVE
@@ -73,6 +82,7 @@ class Hand():
         og_location = -1
         if card == self.top_nertz(): 
             new_cards = [self.nertz_pile.pop()]
+            self.score += 2
             og_location = Origin.NERTZ
         elif len(self.get_top3()) > 0 and card == self.get_top3()[0]: 
             new_cards = [self.draw_pile.take_card()]
@@ -95,10 +105,13 @@ class Hand():
     def remove_from_origin(self, card, origin):
         if origin == Origin.NERTZ:
             self.nertz_pile.pop(-1)
+            self.score += 2
         elif origin == Origin.DRAW:
             self.draw_pile.take_card()
         else: 
             self.working_piles[origin.value].remove_top_card()
+        self.score += 1 # a card was moved to CS
 
     def has_nertz(self):
         return len(self.nertz_pile) == 0
+

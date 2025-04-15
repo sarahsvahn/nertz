@@ -18,10 +18,6 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 def handle_connect():
     print("A client connected!")
     
-# @socketio.on("before_print")
-# def respond():
-#     print("GOT THIS")
-#     emit("ready_to_print")
 
 @socketio.on("player_join")
 def join_game(data):
@@ -51,6 +47,7 @@ def cp_move(data):
 
 @socketio.on("has_nertz")
 def game_over(): 
+    print("HAS NERTZ")
     emit("get_scores", {}, broadcast=True)
 
 @socketio.on("my_score")
@@ -58,6 +55,7 @@ def get_player_score(data):
     name = data.get("name")
     score = data.get("score")
     game.set_score(name, score)
+    print(name, " ", score)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
