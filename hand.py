@@ -15,7 +15,7 @@ class Hand():
         for i in range(1, 14):
             for j in range(4):
                 deck.append(Card(Suit(j).name, i))
-        # random.shuffle(deck) #TODO Add back in when ready
+        random.shuffle(deck) #TODO Add back in when ready
         return deck 
     
     def reset_hand(self):
