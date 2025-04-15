@@ -5,6 +5,17 @@ from enums import Status, Origin
 from card import Card
 import curses 
 
+# TODO community section should print on top before update
+# TODO nertz pile should display count of nertz 
+# TODO starting the next game doesn't work 
+# TODO alert player when the draw deck is turned over 
+# TODO mouse is moved to cp after someone updates that, shouldn't happen 
+# TODO shuffle
+# TODO extra line between lines of cps 
+# TODO colors 
+# TODO extra line between wp4 and top3, maybe change name to drawpile
+# TODO indicate which card you are allowed to take from top3 and wps 
+
 sio = socketio.Client()
 
 cp_move_done = threading.Event()
