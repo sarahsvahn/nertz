@@ -4,7 +4,13 @@ from community_pile import CommunityPile
 
 class CommunitySection():
     def __init__(self, num_players):
+        self.num_players = num_players
         self.piles = [0] * (4 * num_players)
+        self.piles_count = 0
+        self.count_mutex = threading.Lock()
+    
+    def reset(self):
+        self.piles = [0] * (4 * self.num_players)
         self.piles_count = 0
         self.count_mutex = threading.Lock()
 

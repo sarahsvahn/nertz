@@ -10,14 +10,6 @@ class Game():
         self.community_section = CommunitySection(self.num_players)
         self.scores_count = 0
 
-    # def initialize_game(self):
-    #     self.community_section = 
-
-    # def set_member_variables(self, num_players):
-    #     self.num_players = num_players
-    #     self.players = [0] * num_players
-    #     self.scores = [0] * num_players
-
     def start_game(self, num_players):
         Game.set_member_variables(num_players)
     
@@ -29,7 +21,9 @@ class Game():
         return self.community_section.get_board(name, card, pile)
     
     def set_score(self, name, score):
-        self.scores[name] = score
+        if name not in self.scores: 
+            self.scores[name] = 0
+        self.scores[name] += score
         self.scores_count += 1
         if self.scores_count == self.num_players:
             self.scores_count = 0
@@ -38,4 +32,7 @@ class Game():
     
     def get_scores(self):
         return self.scores
+    
+    def reset(self): 
+        self.community_section.reset()
 

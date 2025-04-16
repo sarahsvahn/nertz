@@ -75,6 +75,7 @@ def get_player_score(data):
         else: 
             print("reset")
             emit("reset", {"scores": scores}, broadcast=True)
+            game.reset()
     print(name, " ", score)
 
 if __name__ == '__main__':
