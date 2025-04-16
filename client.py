@@ -225,6 +225,8 @@ def query_loop():
             input_win.refresh()         
 
         query = input_win.getstr().decode("utf-8").lower()
+    
+    sio.emit("test")
 
 def validate_card(card_name):
     print(card_name)

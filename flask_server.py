@@ -58,6 +58,10 @@ def game_over():
     print("HAS NERTZ")
     emit("get_scores", {}, broadcast=True)
 
+@socketio.on("test")
+def test():
+    print("Done with query loop")
+
 @socketio.on("my_score")
 def get_player_score(data):
     name = data.get("name")
