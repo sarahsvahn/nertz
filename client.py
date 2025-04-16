@@ -4,6 +4,7 @@ import socketio
 from enums import Status, Origin
 from card import Card
 import curses 
+from windows import Windows
 
 # TODO add to cp double digits - DONE
 # TODO extra line between lines of cps - DONE
@@ -12,10 +13,8 @@ import curses
 # TODO shuffle
 # TODO make ncurses class, and others
 # TODO make sure terminal is big enough
-# TODO colors 
 # TODO alert player when the draw deck is turned over 
 # TODO indicate which card you are allowed to take from top3 and wps visually
-# TODO mouse is moved to cp after someone updates that, shouldn't happen 
 # TODO make name a member variable of Hand, with a getter and a setter func
 # TODO say who got nertz
 
@@ -28,11 +27,13 @@ server_url = "http://localhost:5000"
 hand = Hand()
 name = "" 
 
-print_mutex = threading.Lock()
-input_win = None
-community_win = None 
-hand_win = None
-error_win = None
+# print_mutex = threading.Lock()
+# input_win = None
+# community_win = None 
+# hand_win = None
+# error_win = None
+
+windows = Windows()
 
 continue_loop = True #TODO this needs a mutex 
 
@@ -40,33 +41,36 @@ def main(stdscr):
     global input_win, community_win, hand_win, error_win, hand
     
     stdscr.clear()
-    curses.curs_set(1)
-    curses.echo()
+    # curses.curs_set(1)
+    # curses.echo()
     
     # colors 
-    curses.can_change_color()
-    curses.start_color()
-    curses.init_color(curses.COLOR_WHITE, 1000, 1000, 1000) # redefine white
-    curses.init_color(8, 500, 500, 500) # grey 
-    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE) 
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    curses.init_pair(3, 8, curses.COLOR_WHITE)
-    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
-    curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_WHITE)
+    # curses.can_change_color()
+    # curses.start_color()
+    # curses.init_color(curses.COLOR_WHITE, 1000, 1000, 1000) # redefine white
+    # curses.init_color(8, 500, 500, 500) # grey 
+    # curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE) 
+    # curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    # curses.init_pair(3, 8, curses.COLOR_WHITE)
+    # curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
+    # curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_WHITE)
+
     stdscr.bkgd(' ', curses.color_pair(3))
 
-    height, width = stdscr.getmaxyx()
-    input_height = 3
-    output_height = height - input_height * 2
-    hand_win = curses.newwin(output_height, int(width / 2), 0, 0)
-    community_win = curses.newwin(output_height, int(width / 2), 0, int(width / 2))
-    input_win = curses.newwin(input_height, width, output_height + 3, 0)
-    error_win = curses.newwin(input_height, width, output_height, 0)
+    windows.init_windows()
 
-    hand_win.bkgd(' ', curses.color_pair(3))
-    community_win.bkgd(' ', curses.color_pair(3))
-    input_win.bkgd(' ', curses.color_pair(3))
-    error_win.bkgd(' ', curses.color_pair(3))
+    # height, width = stdscr.getmaxyx()
+    # input_height = 3
+    # output_height = height - input_height * 2
+    # hand_win = curses.newwin(output_height, int(width / 2), 0, 0)
+    # community_win = curses.newwin(output_height, int(width / 2), 0, int(width / 2))
+    # input_win = curses.newwin(input_height, width, output_height + 3, 0)
+    # error_win = curses.newwin(input_height, width, output_height, 0)
+
+    # hand_win.bkgd(' ', curses.color_pair(3))
+    # community_win.bkgd(' ', curses.color_pair(3))
+    # input_win.bkgd(' ', curses.color_pair(3))
+    # error_win.bkgd(' ', curses.color_pair(3))
 
     with print_mutex:
         input_win.border()
@@ -179,6 +183,7 @@ def query_loop():
     community_win.border()
     with print_mutex: 
         community_win.refresh()
+        input_win.refresh() # puts the mouse back in the input window 
         
     print_board(print_mutex)
     input_win.clear()
@@ -213,7 +218,9 @@ def query_loop():
                         else:
                             error_win.addstr(1, 1, "Invalid move")
                     elif "wp" in query[2]: 
-                        hand.move_to_wp(query[1], query[2])
+                        result = hand.move_to_wp(query[1], query[2])
+                        if result == Status.INVALID_MOVE: 
+                            error_win.addstr(1, 1, "Invalid move")
                     else: 
                         error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
             elif query == ['d']: 
@@ -289,7 +296,7 @@ def update_cs(data):
     community_win.addstr(2, 1, board[1][0], curses.color_pair(5))
 
     for i in range(0, len(board[2:]), 2):
-        print_cp_cards(i + 3, 1, board[i + 2], board[i + 3], community_win)
+        print_cp_cards(i + 4, 1, board[i + 2], board[i + 3], community_win)
 
     community_win.border()
     
@@ -314,6 +321,7 @@ def print_cards(loc1, loc2, cards, pile_name, window):
                 running_len += len(card.stringify()) + 2
     
     window.addstr(loc1, loc2 + running_len, "]")
+    
     
 def print_cp_cards(loc1, loc2, cards, pile_names, window):
     real_cards = []

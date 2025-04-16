@@ -140,7 +140,7 @@ class Hand():
         return False
 
     
-    def move_to_wp(self, card_name, pile): # TODO refactor this function to use find_og_location
+    def move_to_wp(self, card_name, pile): 
         ''' 
         Parameters: card_name - string representing card, pile - string
                     representing working pile destination
@@ -148,42 +148,27 @@ class Hand():
         Effects: Moves card to specified working pile if move is valid
         Returns: Status.SUCCESS or Status.INVALID_MOVE
         ''' 
-        # print(card_name[-1].upper())
-        # card = Card(card_name[-1].upper(), card_name[:-1])
-
         card = Card.card_with_name(card_name)
         if self.validate_wp(pile):
             top_wp_card = self.working_piles[int(pile[-1]) - 1].get_top_card()
             if top_wp_card.get_value() != 0 and not top_wp_card.next_wp(card): 
-                print("invalid move") # TODO print to a window 
                 return Status.INVALID_MOVE
         
-        # check that card is available to move
         new_cards = -1
-        og_location = -1 # TODO why is this never used?? can we delete??
-
-        if card == self.top_nertz(): 
-            # card being moved it top of nertz
+        og_location = self.find_og_location(card, pile)
+        if og_location == Origin.NOT_FOUND:
+            return Status.INVALID_MOVE
+        elif og_location == Origin.NERTZ: 
             new_cards = [self.nertz_pile.pop()]
             self.score += 2
-            og_location = Origin.NERTZ
-        elif len(self.get_top3()) > 0 and card == self.get_top3()[0]: 
-            # card being moved is top of draw pile
+        elif og_location == Origin.DRAW: 
             new_cards = [self.draw_pile.take_card()]
-            og_location = Origin.DRAW
-        else:
-            # card being moved is in a working pile
-            for index, working_pile in enumerate(self.working_piles): 
+        else: # must be working pile
+            for working_pile in self.working_piles: 
                 if working_pile.in_pile(card):
                     new_cards = working_pile.remove_cards(card)
-                    og_location = list(Origin)[index]
-    
-        if new_cards == -1:
-            # can't find card
-            return Status.INVALID_MOVE
 
         # actually move card 
-        # if pile[:-1] == "wp": #We dont need this check because we validate pile
         working_pile = self.working_piles[int(pile[-1]) - 1]
         working_pile.put_cards(new_cards)
         return Status.SUCCESS
