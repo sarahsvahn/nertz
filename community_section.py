@@ -69,3 +69,30 @@ class CommunitySection():
                 cp_string += " "
         
         return to_return
+
+
+
+
+
+
+    def temp_get_board(self, name, card, pile): # think about printing unupdated data, would have to lock whole CS
+        to_return = []
+        pile_names = []
+        piles_count = 0
+        with self.count_mutex:
+            piles_count = self.piles_count
+        for i in range(piles_count):
+            top_cards.append(self.piles[i].get_top_card())
+            pile_names.append("cp" + str(i + 1))
+        
+        # to_return = f"COMMUNITY SECTION\n{name} added {card} to {pile}\n"
+        # cp_string = f""
+        curr_idx = 0
+        for i in range(len(top_cards)):
+            if i % 4 == 0:
+                to_return.append(top_cards[i])
+                curr_idx += 1
+            else:
+                to_return[curr_idx].append(top_cards[i])
+        
+        return to_return

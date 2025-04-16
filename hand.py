@@ -38,7 +38,7 @@ class Hand():
 
     def top_nertz(self):
         if len(self.nertz_pile) == 0: 
-            return []
+            return Card("S", "0")
         return self.nertz_pile[-1]
     
     def get_wp(self, idx): 

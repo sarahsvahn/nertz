@@ -35,14 +35,26 @@ hand_win = None
 error_win = None
 
 continue_loop = True #TODO this needs a mutex 
-loop_done = True
 
 def main(stdscr):
     global input_win, community_win, hand_win, error_win, hand
     
     stdscr.clear()
-    curses.curs_set(1) # show cursor ? 
+    curses.curs_set(1)
     curses.echo()
+    
+    # colors 
+    curses.can_change_color()
+    curses.start_color()
+    curses.init_color(curses.COLOR_WHITE, 1000, 1000, 1000) # redefine white
+    curses.init_color(8, 500, 500, 500) # grey 
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE) 
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(3, 8, curses.COLOR_WHITE)
+    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
+    curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_WHITE)
+    stdscr.bkgd(' ', curses.color_pair(3))
+
     height, width = stdscr.getmaxyx()
     input_height = 3
     output_height = height - input_height * 2
@@ -50,6 +62,11 @@ def main(stdscr):
     community_win = curses.newwin(output_height, int(width / 2), 0, int(width / 2))
     input_win = curses.newwin(input_height, width, output_height + 3, 0)
     error_win = curses.newwin(input_height, width, output_height, 0)
+
+    hand_win.bkgd(' ', curses.color_pair(3))
+    community_win.bkgd(' ', curses.color_pair(3))
+    input_win.bkgd(' ', curses.color_pair(3))
+    error_win.bkgd(' ', curses.color_pair(3))
 
     with print_mutex:
         input_win.border()
@@ -62,7 +79,7 @@ def main(stdscr):
         hand_win.refresh()
 
         error_win.border()
-        error_win.addstr(1, 1, "Errors:")
+        error_win.addstr(1, 1, "Errors:", curses.color_pair(4))
         error_win.refresh()
 
     sio.connect(server_url)
@@ -108,11 +125,44 @@ def update_cs(data):
     global community_win, print_mutex
 
     community_win.clear()
-    community_win.border()
     
     board = data.get("board").split("\n")
-    for i, line in enumerate(board): 
-        community_win.addstr(i + 1, 1, line)
+    community_win.addstr(1, 1, board[0], curses.color_pair(4))
+    community_win.addstr(2, 1, board[1], curses.color_pair(5))
+    board = "\n".join(board[2:]) # put board back into one string 
+
+    y, x = 4, 1
+    i = 0
+    while i < len(board):
+        c = board[i]
+        if c in ['H', 'D']: # red 
+            # 2 digits to rewrite in color
+            if i >= 2 and board[i - 2].isdigit() and board[i - 1].isdigit():
+                community_win.attron(curses.color_pair(1))
+                community_win.addch(y, x - 2, board[i - 2])
+                community_win.addch(y, x - 1, board[i - 1])
+                community_win.attroff(curses.color_pair(1))
+            # 1 digit to rewrite in color
+            elif i >= 1 and board[i - 1].isdigit():
+                community_win.attron(curses.color_pair(1))
+                community_win.addch(y, x - 1, board[i - 1])
+                community_win.attroff(curses.color_pair(1))
+            # write the letter 
+            community_win.attron(curses.color_pair(1))
+            community_win.addch(y, x, c)
+            community_win.attroff(curses.color_pair(1))
+        else: # black 
+            community_win.attron(curses.color_pair(2))
+            community_win.addch(y, x, c)
+            community_win.attroff(curses.color_pair(2))
+
+        x += 1
+        if c == '\n':
+            y += 1
+            x = 0
+        i += 1
+
+    community_win.border()
     
     with print_mutex:  
         community_win.refresh()
@@ -154,17 +204,13 @@ def print_scores(scores):
     community_win.clear()
     community_win.border()
     for i, player in enumerate(scores):
-        community_win.addstr(i + 1, 1, f"{player}: {scores[player]}")
+        with print_mutex:
+            community_win.addstr(i + 1, 1, f"{player}: {scores[player]}")
     with print_mutex: 
         community_win.refresh()
 
 @sio.on("start_game")
 def query_loop(): 
-    global loop_done
-    # wait for loop_done to be True
-    while not loop_done:
-        continue
-    loop_done = False
     global error_win, input_win, name, hand, print_mutex, continue_loop
     curses.echo()
     continue_loop = True
@@ -177,7 +223,7 @@ def query_loop():
     print_board(print_mutex)
     input_win.clear()
     input_win.border()
-    input_win.addstr(1, 1, "> ")
+    input_win.addstr(1, 1, "> ", curses.color_pair(4))
 
     with print_mutex:
         input_win.refresh()
@@ -228,7 +274,7 @@ def query_loop():
             error_win.refresh()
         input_win.clear()
         input_win.border()
-        input_win.addstr(1, 1, "> ")
+        input_win.addstr(1, 1, "> ", curses.color_pair(4))
         with print_mutex:
             input_win.refresh()     
 
@@ -237,7 +283,6 @@ def query_loop():
         else:
             query = "exit"
     
-    loop_done = True
     sio.emit("test", {"parameter": "After loop"})
 
 def validate_card(card_name):
@@ -259,19 +304,43 @@ def print_board(print_mutex):
     hand_win.clear()
     hand_win.border()
 
-    hand_win.addstr(1, 1, f"{name}'s HAND:")
-    hand_win.addstr(3, 1, f"nertz:  [{hand.top_nertz()}]")
+    hand_win.addstr(1, 1, f"{name}'s HAND", curses.color_pair(4))
+    # hand_win.addstr(3, 1, "nertz: ")
+    # hand_win.addstr(3, 8, f"{hand.top_nertz()}", curses.color_pair(hand.top_nertz().get_color().value + 1))
+    print_cards(3, 1, [hand.top_nertz()], "nertz")
     hand_win.addstr(4, 1, f"         {hand.count_nertz()}")
-    hand_win.addstr(6, 1, f"wp1:    {hand.get_wp(0)}")
-    hand_win.addstr(7, 1, f"wp2:    {hand.get_wp(1)}")
-    hand_win.addstr(8, 1, f"wp3:    {hand.get_wp(2)}")
-    hand_win.addstr(9, 1, f"wp4:    {hand.get_wp(3)}")
-    hand_win.addstr(11, 1, f"draw pile:   {hand.get_top3()}")
+    print_cards(6, 1, hand.get_wp(0).get_cards(), "wp1")
+    print_cards(7, 1, hand.get_wp(1).get_cards(), "wp2")
+    print_cards(8, 1, hand.get_wp(2).get_cards(), "wp3")
+    print_cards(9, 1, hand.get_wp(3).get_cards(), "wp4")
+    print_cards(11, 1, hand.get_top3(), "draw_pile")
 
     with print_mutex:
         hand_win.refresh()         
 
+
+def print_cards(loc1, loc2, cards, pile_name):
+    if pile_name == "nertz": 
+        hand_win.addstr(loc1, loc2, f"{pile_name}:  [")
+        running_len = len(pile_name) + 4
+    else: 
+        hand_win.addstr(loc1, loc2, f"{pile_name}:    [")
+        running_len = len(pile_name) + 6
+    for i, card in enumerate(cards):
+        if card.get_value() != 0:
+            if i == len(cards) - 1:
+                hand_win.addstr(loc1, loc2 + running_len, f"{card}", curses.color_pair(card.get_color().value + 1))
+                running_len += len(card.stringify())
+            else:
+                hand_win.addstr(loc1, loc2 + running_len, f"{card}, ", curses.color_pair(card.get_color().value + 1))
+                running_len += len(card.stringify()) + 2
+    
+    hand_win.addstr(loc1, loc2 + running_len, "]")
+    
+
+
 curses.wrapper(main)
+
 
 if __name__ == "__main__":
     main()

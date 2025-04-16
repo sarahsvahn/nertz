@@ -14,7 +14,7 @@ players_joined = 0
 app = Flask(__name__) # TODO why do we have this again
 app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app, cors_allowed_origins="*")
-
+mutex = threading.Lock()
 @socketio.on('connect')
 def handle_connect():
     print("A client connected!")
@@ -34,12 +34,14 @@ def join_game(data):
 def rejoin_game(): 
     global players_joined
     print("player has rejoined")
-    players_joined += 1
+    with mutex:
+        players_joined += 1
     print("count: ", players_joined)
-    if players_joined == num_players:
-        print("about to emit start again")
-        emit("start_game", broadcast=True)
-        players_joined = 0
+    with mutex:
+        if players_joined == num_players:
+            print("about to emit start again")
+            emit("start_game", broadcast=True)
+            players_joined = 0
 
 @socketio.on("cp_move")
 def cp_move(data):
