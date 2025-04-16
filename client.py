@@ -26,7 +26,6 @@ name = ""
 
 windows = None
 
-continue_loop = True #TODO this needs a mutex, wait to fix bug
 
 event = threading.Event() # TODO not global
 query = None # TODO not global 
@@ -69,11 +68,10 @@ def cp_move_result(data):
 
 @sio.on("reset")
 def reset(data): 
-    global continue_loop, windows, event
+    global windows, event
 
     event.set()
 
-    continue_loop = False
     scores = data.get("scores")
     print_scores(scores)
     hand.reset_hand()
@@ -86,8 +84,6 @@ def reset(data):
            
 @sio.on("game_over")
 def game_over(data): 
-    global continue_loop
-    continue_loop = False
     scores = data.get("scores")
     print_scores(scores)
     winner = min(scores, key=scores.get)
@@ -99,14 +95,14 @@ def print_scores(scores):
     windows.print_scores(scores)
 
 def input_thread(event): 
+    global query
     query = windows.input_read().lower()
     event.set()
 
 @sio.on("start_game")
 def query_loop(): 
-    global name, hand, continue_loop, windows, query 
+    global name, hand, windows, query 
     curses.echo()
-    continue_loop = True
 
     windows.community_refresh()
     windows.input_refresh()
@@ -156,7 +152,6 @@ def query_loop():
 
         windows.print_board(hand, name)
         windows.input_write("> ")
-        # if continue_loop:
         query = None
         threading.Thread(target=input_thread, args=(event,)).start()
         event.wait()
@@ -165,7 +160,7 @@ def query_loop():
         # else:
         #     query = "exit"
     # except Terminate:
-    #     sio.emit("test", {"parameter": "After loop"})
+    sio.emit("test", {"parameter": "After loop"})
     #     signal.alarm(0)
     #     return
     
