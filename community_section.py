@@ -12,7 +12,6 @@ class CommunitySection():
     def reset(self):
         self.piles = [0] * (4 * self.num_players)
         self.piles_count = 0
-        self.count_mutex = threading.Lock()
 
     def start_new_pile(self, card):
         with self.count_mutex:

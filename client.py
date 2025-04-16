@@ -213,7 +213,6 @@ def query_loop():
                     error_win.addstr(1, 1, "Your nertz pile is not empty. Keep playing.")
             else: 
                 error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
-                # error_win.refresh()
 
         print_board(print_mutex)  
         with print_mutex:
@@ -222,9 +221,10 @@ def query_loop():
         input_win.border()
         input_win.addstr(1, 1, "> ")
         with print_mutex:
-            input_win.refresh()         
+            input_win.refresh()     
 
-        query = input_win.getstr().decode("utf-8").lower()
+        if not continue_loop:
+            query = input_win.getstr().decode("utf-8").lower()
     
     sio.emit("test")
 
