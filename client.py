@@ -80,6 +80,7 @@ def reset(data):
     windows.hand_refresh()
     windows.input_write("Enter any key to start the next round: ")
     windows.input_read()
+    sio.emit("test", {"parameter": "entered key"})
     sio.emit("player_rejoin")
            
 @sio.on("game_over")
