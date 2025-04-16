@@ -59,8 +59,8 @@ def game_over():
     emit("get_scores", {}, broadcast=True)
 
 @socketio.on("test")
-def test():
-    print("Done with query loop")
+def test(data):
+    print(data.get("parameter"))
 
 @socketio.on("my_score")
 def get_player_score(data):

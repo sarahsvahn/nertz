@@ -14,7 +14,7 @@ import curses
 # TODO make sure terminal is big enough
 # TODO colors 
 # TODO alert player when the draw deck is turned over 
-# TODO indicate which card you are allowed to take from top3 and wps 
+# TODO indicate which card you are allowed to take from top3 and wps visually
 # TODO mouse is moved to cp after someone updates that, shouldn't happen 
 # TODO make name a member variable of Hand, with a getter and a setter func
 # TODO say who got nertz
@@ -35,6 +35,7 @@ hand_win = None
 error_win = None
 
 continue_loop = True #TODO this needs a mutex 
+loop_done = True
 
 def main(stdscr):
     global input_win, community_win, hand_win, error_win, hand
@@ -159,6 +160,11 @@ def print_scores(scores):
 
 @sio.on("start_game")
 def query_loop(): 
+    global loop_done
+    # wait for loop_done to be True
+    while not loop_done:
+        continue
+    loop_done = False
     global error_win, input_win, name, hand, print_mutex, continue_loop
     curses.echo()
     continue_loop = True
@@ -178,6 +184,8 @@ def query_loop():
     query = input_win.getstr().decode("utf-8").lower()
 
     while query != "exit" and continue_loop: 
+
+        sio.emit("test", {"parameter": "Starting loop"})
         error_win.clear()
         error_win.border()
         with print_mutex:
@@ -226,10 +234,11 @@ def query_loop():
 
         if continue_loop:
             query = input_win.getstr().decode("utf-8").lower()
-        # else:
-        #     query = "exit"
+        else:
+            query = "exit"
     
-    sio.emit("test")
+    loop_done = True
+    sio.emit("test", {"parameter": "After loop"})
 
 def validate_card(card_name):
     print(card_name)
