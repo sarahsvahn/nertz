@@ -19,8 +19,8 @@ class CommunitySection():
             self.start_new_pile(card)
             return Status.SUCCESS
         else: 
-            if pile_name[-1].isdigit():
-                pile_idx = int(pile_name[-1]) - 1
+            if pile_name[2:].isnumeric():
+                pile_idx = int(pile_name[2:]) - 1
             else:
                 return Status.INVALID_MOVE
             # if self.piles[pile_idx].get_top_card().next_cp(card): #TODO keep for higher concurrency?
@@ -38,7 +38,7 @@ class CommunitySection():
             top_cards.append(self.piles[i].get_top_card())
             pile_names.append("cp" + str(i + 1))
         
-        to_return = f"{name} added {card} to {pile}\nCOMMUNITY SECTION\n"
+        to_return = f"COMMUNITY SECTION\n{name} added {card} to {pile}\n"
         cp_string = f""
         for i in range(len(top_cards)):
             if i % 4 == 0:
@@ -58,7 +58,7 @@ class CommunitySection():
 
             if i % 4 == 3 or i == len(top_cards) - 1:
                 to_return = to_return[:-1]
-                to_return += "]\n" + cp_string + "\n"
+                to_return += "]\n" + cp_string + "\n\n"
             else:
                 to_return += " "
                 cp_string += " "

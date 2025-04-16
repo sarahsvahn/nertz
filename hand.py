@@ -8,6 +8,15 @@ import random
 class Hand():
     def __init__(self): 
         self.reset_hand()
+
+    def reset_hand(self):
+        deck = Hand.generate_deck()
+        self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
+                              WorkingPile(deck[2]), WorkingPile(deck[3])]
+        # self.nertz_pile = deck[4:17] #TODO uncomment this line
+        self.nertz_pile = [Card("D", "1")] #TODO remove this line
+        self.draw_pile = DrawPile(deck[17:])
+        self.score = -26
     
     @staticmethod
     def generate_deck():
@@ -17,14 +26,6 @@ class Hand():
                 deck.append(Card(Suit(j).name, i))
         random.shuffle(deck) #TODO Add back in when ready
         return deck 
-    
-    def reset_hand(self):
-        deck = Hand.generate_deck()
-        self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
-                              WorkingPile(deck[2]), WorkingPile(deck[3])]
-        self.nertz_pile = deck[4:17]
-        self.draw_pile = DrawPile(deck[17:])
-        self.score = -26
     
     def shuffle(self):
         self.draw_pile.shuffle_cards()
@@ -98,10 +99,8 @@ class Hand():
         if pile[:-1] == "wp":
             working_pile = self.working_piles[int(pile[-1]) - 1]
             working_pile.put_cards(new_cards)
-        # elif pile[:-1] == "cp" TODO 
-            #send message to community pile to put cards 
 
-    def remove_from_origin(self, card, origin):
+    def remove_from_origin(self, origin): 
         if origin == Origin.NERTZ:
             self.nertz_pile.pop(-1)
             self.score += 2
@@ -114,3 +113,5 @@ class Hand():
     def has_nertz(self):
         return len(self.nertz_pile) == 0
 
+    def count_nertz(self):
+        return len(self.nertz_pile)

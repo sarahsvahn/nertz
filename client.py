@@ -5,16 +5,18 @@ from enums import Status, Origin
 from card import Card
 import curses 
 
-# TODO community section should print on top before update
-# TODO nertz pile should display count of nertz 
+# TODO add to cp double digits - DONE
+# TODO extra line between lines of cps - DONE
+
 # TODO starting the next game doesn't work 
-# TODO alert player when the draw deck is turned over 
-# TODO mouse is moved to cp after someone updates that, shouldn't happen 
 # TODO shuffle
-# TODO extra line between lines of cps 
+# TODO make ncurses class, and others
+# TODO make sure terminal is big enough
 # TODO colors 
-# TODO extra line between wp4 and top3, maybe change name to drawpile
+# TODO alert player when the draw deck is turned over 
 # TODO indicate which card you are allowed to take from top3 and wps 
+# TODO mouse is moved to cp after someone updates that, shouldn't happen 
+# TODO make name a member variable of Hand, with a getter and a setter func
 
 sio = socketio.Client()
 
@@ -23,9 +25,9 @@ cp_move_done = threading.Event()
 server_url = "http://localhost:5000"
 
 hand = Hand()
-print_mutex = threading.Lock()
+name = "" 
 
-name = ""
+print_mutex = threading.Lock()
 input_win = None
 community_win = None 
 hand_win = None
@@ -91,7 +93,7 @@ def cp_move_result(data):
     if Status[data.get("status")] == Status.SUCCESS:
         remove_location = data.get("origin")
         card = Card.card_with_name(data.get("card")) 
-        hand.remove_from_origin(card, Origin[remove_location])
+        hand.remove_from_origin(Origin[remove_location])
     else: 
         error_win.addstr(1, 1, "Move failed. RIPPPPP that sucks.")
         with print_mutex:
@@ -125,9 +127,8 @@ def reset(data):
     input_win.addstr(1, 1, "Enter any key to start the next round: ")
     with print_mutex:
         input_win.refresh() 
-    query = input_win.getstr().decode("utf-8").lower()
-    if query:
-        sio.emit("player_rejoin")
+    input_win.getstr().decode("utf-8").lower()
+    sio.emit("player_rejoin")
            
 @sio.on("game_over")
 def game_over(data): 
@@ -233,12 +234,13 @@ def print_board(print_mutex):
     hand_win.border()
 
     hand_win.addstr(1, 1, f"{name}'s HAND:")
-    hand_win.addstr(2, 1, f"nertz:  {hand.top_nertz()}")
-    hand_win.addstr(3, 1, f"wp1:    {hand.get_wp(0)}")
-    hand_win.addstr(4, 1, f"wp2:    {hand.get_wp(1)}")
-    hand_win.addstr(5, 1, f"wp3:    {hand.get_wp(2)}")
-    hand_win.addstr(6, 1, f"wp4:    {hand.get_wp(3)}")
-    hand_win.addstr(7, 1, f"top3:   {hand.get_top3()}")
+    hand_win.addstr(3, 1, f"nertz:  [{hand.top_nertz()}]")
+    hand_win.addstr(4, 1, f"         {hand.count_nertz()}")
+    hand_win.addstr(6, 1, f"wp1:    {hand.get_wp(0)}")
+    hand_win.addstr(7, 1, f"wp2:    {hand.get_wp(1)}")
+    hand_win.addstr(8, 1, f"wp3:    {hand.get_wp(2)}")
+    hand_win.addstr(9, 1, f"wp4:    {hand.get_wp(3)}")
+    hand_win.addstr(11, 1, f"draw pile:   {hand.get_top3()}")
 
     with print_mutex:
         hand_win.refresh()         

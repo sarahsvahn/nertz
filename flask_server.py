@@ -31,8 +31,11 @@ def join_game(data):
             emit("start_game", broadcast=True)
 
 @socketio.on("player_rejoin")
-def rejoin_game(data): 
+def rejoin_game(): 
+    global players_joined
+    print("player has rejoined")
     players_joined += 1
+    print("count: ", players_joined)
     if players_joined == num_players:
         print("about to emit start again")
         emit("start_game", broadcast=True)
@@ -63,8 +66,10 @@ def get_player_score(data):
     scores = game.get_scores()
     if result: # all scores updated
         if any(value > 100 for value in scores.values()):
+            print("GAME OVER")
             emit("game_over", {"scores": scores}, broadcast=True)
         else: 
+            print("reset")
             emit("reset", {"scores": scores}, broadcast=True)
     print(name, " ", score)
 
