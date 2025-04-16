@@ -26,9 +26,9 @@ name = ""
 
 windows = None
 
-
 event = threading.Event() # TODO not global
 query = None # TODO not global 
+thread = None # TODO not global 
 
 def main(stdscr):
     global hand, windows
@@ -79,7 +79,8 @@ def reset(data):
     windows.input_refresh()
     windows.hand_refresh()
     windows.input_write("Enter any key to start the next round: ")
-    windows.input_read()
+    event.wait()
+    # windows.input_read()
     sio.emit("test", {"parameter": "entered key"})
     sio.emit("player_rejoin")
            
@@ -95,14 +96,17 @@ def print_scores(scores):
     global windows
     windows.print_scores(scores)
 
+# thread function
 def input_thread(event): 
-    global query
+    global query, thread
     query = windows.input_read().lower()
     event.set()
+    thread = None
+    # sio.emit("test", {"parameter": ""})
 
 @sio.on("start_game")
 def query_loop(): 
-    global name, hand, windows, query 
+    global name, hand, windows, query, thread
     curses.echo()
 
     windows.community_refresh()
@@ -112,10 +116,9 @@ def query_loop():
     windows.input_write("> ")
     query = windows.input_read().lower()
     
-    # try:
     while query != None: 
         sio.emit("test", {"parameter": "Starting loop"})
-        sio.emit("test", {"parameter": f"Query{query}"})
+        sio.emit("test", {"parameter": f"Query: {query}"})
         windows.error_refresh()
         if len(query) == 0: 
             windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
@@ -155,16 +158,11 @@ def query_loop():
         windows.print_board(hand, name)
         windows.input_write("> ")
         query = None
-        threading.Thread(target=input_thread, args=(event,)).start()
+        thread = threading.Thread(target=input_thread, args=(event,)).start()
         event.wait()
         event.clear()
-            # query = windows.input_read().lower()
-        # else:
-        #     query = "exit"
-    # except Terminate:
+
     sio.emit("test", {"parameter": "After loop"})
-    #     signal.alarm(0)
-    #     return
     
 
 
