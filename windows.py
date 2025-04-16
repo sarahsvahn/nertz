@@ -1,6 +1,10 @@
 import threading
 import curses 
 from card import Card
+from enums import Status
+import sys
+
+MAX_PLAYERS = 6
 
 class Windows():
     def __init__(self, stdscr):
@@ -22,10 +26,15 @@ class Windows():
         curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
         curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_WHITE)
         
-        self.init_windows(stdscr)
+        if self.init_windows(stdscr) == Status.FAILED_JOIN:
+            sys.exit("Please resize terminal")
     
     def init_windows(self, stdscr):
         height, width = stdscr.getmaxyx()
+        min_height = max(11 + 3 * MAX_PLAYERS, 19)
+        min_width = 64 # 30 for each window + the borders
+        if height < min_height or width < min_width: 
+            return Status.FAILED_JOIN
         input_height = 3
         output_height = height - input_height * 2
         self.hand_win = curses.newwin(output_height, int(width / 2), 0, 0)
@@ -51,7 +60,7 @@ class Windows():
             self.error_win.border()
             self.error_win.addstr(1, 1, "Errors:", curses.color_pair(4))
             self.error_win.refresh()  
-            
+                        
     def write(self, window, str, y, x):
         window.clear()
         window.border()

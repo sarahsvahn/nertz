@@ -5,11 +5,10 @@ from enums import Status, Origin
 from card import Card
 import curses 
 from windows import Windows
-
+import signal
 
 # TODO starting the next game doesn't work 
 # TODO shuffle
-# TODO make sure terminal is big enough
 # TODO alert player when the draw deck is turned over 
 # TODO indicate which card you are allowed to take from top3 and wps visually
 # TODO make name a member variable of Hand, with a getter and a setter func
@@ -26,7 +25,7 @@ name = ""
 
 windows = None
 
-continue_loop = True #TODO this needs a mutex 
+continue_loop = True #TODO this needs a mutex, wait to fix bug
 
 def main(stdscr):
     global hand, windows
@@ -53,7 +52,7 @@ def handle_game_joined(data):
 
 @sio.on("cp_move_result")
 def cp_move_result(data):
-    global error_win, hand
+    global hand
     if Status[data.get("status")] == Status.SUCCESS:
         remove_location = data.get("origin")
         hand.remove_from_origin(Origin[remove_location])
@@ -67,6 +66,9 @@ def cp_move_result(data):
 @sio.on("reset")
 def reset(data): 
     global continue_loop, windows
+
+    signal.alarm(1)
+
     continue_loop = False
     scores = data.get("scores")
     print_scores(scores)
@@ -92,6 +94,12 @@ def print_scores(scores):
     global windows
     windows.print_scores(scores)
 
+class Terminate(Exception): 
+    pass # TODO move to separate file
+
+def terminate_handler(signum, frame):
+    raise Terminate("Round over")
+
 @sio.on("start_game")
 def query_loop(): 
     global name, hand, continue_loop, windows 
@@ -100,59 +108,64 @@ def query_loop():
 
     windows.community_refresh()
     windows.input_refresh()
-        
     windows.print_board(hand, name)
 
     windows.input_write("> ")
     query = windows.input_read().lower()
 
-    while query != "exit" and continue_loop: 
-
-        sio.emit("test", {"parameter": "Starting loop"})
-        windows.error_refresh()
-        if len(query) == 0: 
-            error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
-        else: 
-            query = query.split()
-            if query[0] == 'm' and len(query) == 3:
-                if validate_card(query[1]) == Status.INVALID_CARD:
-                    error_win.addstr(1, 1, "Invalid Card")
-                else:
-                    if "cp" in query[2]:
-                        origin = hand.find_og_location(Card.card_with_name(query[1]), "CP")
-                        if origin != Origin.NOT_FOUND:
-                            cp_move_done.clear()
-                            sio.emit("cp_move", {'card': query[1], 'pile': query[2], "name": name, "origin": origin.name})
-                            cp_move_done.wait()
-                        else:
-                            error_win.addstr(1, 1, "Invalid move")
-                    elif "wp" in query[2]: 
-                        result = hand.move_to_wp(query[1], query[2])
-                        if result == Status.INVALID_MOVE: 
-                            error_win.addstr(1, 1, "Invalid move")
-                    else: 
-                        error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
-            elif query == ['d']: 
-                hand.draw()
-            elif query == ['s']:
-                hand.shuffle()
-                # TODO 
-            elif query == ['nertz']:
-                if hand.has_nertz():
-                    sio.emit("has_nertz")
-                else: 
-                    error_win.addstr(1, 1, "Your nertz pile is not empty. Keep playing.")
-            else: 
-                error_win.addstr(1, 1, "Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
-
-        windows.print_board(hand, name)
-        windows.input_write("> ")
-        if continue_loop:
-            query = windows.input_read().lower()
-        else:
-            query = "exit"
+    signal.signal(signal.SIGALRM, terminate_handler)
     
-    sio.emit("test", {"parameter": "After loop"})
+    try:
+        while query != "exit" and continue_loop: 
+            sio.emit("test", {"parameter": "Starting loop"})
+            windows.error_refresh()
+            if len(query) == 0: 
+                windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
+            else: 
+                query = query.split()
+                if query[0] == 'm' and len(query) == 3:
+                    if validate_card(query[1]) == Status.INVALID_CARD:
+                        windows.error_write("Invalid move")
+                    else:
+                        if "cp" in query[2]:
+                            origin = hand.find_og_location(Card.card_with_name(query[1]), "CP")
+                            if origin != Origin.NOT_FOUND:
+                                cp_move_done.clear()
+                                sio.emit("cp_move", {'card': query[1], 'pile': query[2], "name": name, "origin": origin.name})
+                                cp_move_done.wait()
+                            else:
+                                windows.error_write("Invalid move")
+                        elif "wp" in query[2]: 
+                            result = hand.move_to_wp(query[1], query[2])
+                            if result == Status.INVALID_MOVE: 
+                                windows.error_write("Invalid move")
+                        else: 
+                            windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
+                elif query == ['d']: 
+                    hand.draw()
+                elif query == ['s']:
+                    hand.shuffle()
+                    # TODO 
+                elif query == ['nertz']:
+                    if hand.has_nertz():
+                        sio.emit("has_nertz")
+                    else: 
+                        windows.error_write("Your nertz pile is not empty. Keep playing.")
+                else: 
+                    windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
+
+            windows.print_board(hand, name)
+            windows.input_write("> ")
+            if continue_loop:
+                query = windows.input_read().lower()
+            else:
+                query = "exit"
+    except Terminate:
+        sio.emit("test", {"parameter": "After loop"})
+        signal.alarm(0)
+        return
+    
+
 
 
 def validate_card(card_name):
