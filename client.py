@@ -160,7 +160,7 @@ def print_scores(scores):
 @sio.on("start_game")
 def query_loop(): 
     global error_win, input_win, name, hand, print_mutex, continue_loop
-
+    curses.echo()
     continue_loop = True
 
     community_win.clear()
