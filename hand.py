@@ -5,7 +5,7 @@
 # playing cards. The cards are divided into four working piles, a 
 # nertz pile, and a draw pile. Each player has a score which is updated
 # as appropriate as cards as discarded/moved.
-
+# 
 
 from working_pile import WorkingPile
 from card import Card
