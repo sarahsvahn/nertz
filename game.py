@@ -6,7 +6,6 @@ class Game():
     def __init__(self, num_players):
         self.num_players = num_players
         self.players = []
-        # self.scores = []
         self.scores = {}
         self.community_section = CommunitySection(self.num_players)
         self.scores_count = 0
@@ -34,7 +33,8 @@ class Game():
             return False
     
     def get_scores(self):
-        return self.scores
+        with self.mutex:
+            return self.scores
     
     def reset(self): 
         self.community_section.reset()

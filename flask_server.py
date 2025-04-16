@@ -24,12 +24,13 @@ def handle_connect():
 def join_game(data):
     print(data)
     with mutex:
-        players.append((request.sid, data.get("name")))
+        ((request.sid, data.get("name")))
         emit("game_joined", {"name": data.get("name")})
         if len(players) == num_players:
             print("about to emit start")
             emit("start_game", broadcast=True)
-
+            
+players.append
 @socketio.on("player_rejoin")
 def rejoin_game(): 
     global players_joined
