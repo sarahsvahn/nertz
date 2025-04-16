@@ -115,6 +115,7 @@ def query_loop():
     # try:
     while query != None: 
         sio.emit("test", {"parameter": "Starting loop"})
+        sio.emit("test", {"parameter": f"Query{query}"})
         windows.error_refresh()
         if len(query) == 0: 
             windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
