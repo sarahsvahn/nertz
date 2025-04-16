@@ -62,7 +62,7 @@ def game_over():
 
 @socketio.on("test")
 def test(data):
-    print(data.get("parameter"))
+    print("In tester: " + data.get("parameter"))
 
 @socketio.on("my_score")
 def get_player_score(data):

@@ -13,8 +13,8 @@ class Hand():
         deck = Hand.generate_deck()
         self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
                               WorkingPile(deck[2]), WorkingPile(deck[3])]
-        # self.nertz_pile = deck[4:17] #TODO uncomment this line
-        self.nertz_pile = [Card("D", "1")] #TODO remove this line
+        self.nertz_pile = deck[4:17] #TODO uncomment this line
+        # self.nertz_pile = [Card("D", "1")] #TODO remove this line
         self.draw_pile = DrawPile(deck[17:])
         self.score = -26
     
@@ -24,7 +24,7 @@ class Hand():
         for i in range(1, 14):
             for j in range(4):
                 deck.append(Card(Suit(j).name, i))
-        random.shuffle(deck) #TODO Add back in when ready
+        # random.shuffle(deck) #TODO Add back in when ready
         return deck 
     
     def shuffle(self):
@@ -70,16 +70,12 @@ class Hand():
                     top_wp_card = self.working_piles[int(pile[-1]) - 1].get_top_card()
                     if top_wp_card.get_value() == -1 or top_wp_card.next_wp(card): 
                         valid = True
-                else:
-                    valid = False 
-            else:
-                valid = False
         if not valid: 
             print("invalid move") # TODO print to a window 
             return Status.INVALID_MOVE
         # check that card is available to move
         new_cards = -1
-        og_location = -1
+        og_location = -1 # TODO why is this never used?? can we delete??
         if card == self.top_nertz(): 
             new_cards = [self.nertz_pile.pop()]
             self.score += 2

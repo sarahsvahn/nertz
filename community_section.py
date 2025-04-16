@@ -33,66 +33,74 @@ class CommunitySection():
             # else:
             #     return Status.INVALID_MOVE
 
-    def get_board(self, name, card, pile): # think about printing unupdated data, would have to lock whole CS
+    # def get_board(self, name, card, pile): # think about printing unupdated data, would have to lock whole CS
+    #     top_cards = []
+    #     pile_names = []
+    #     piles_count = 0
+    #     with self.count_mutex:
+    #         piles_count = self.piles_count
+    #     for i in range(piles_count):
+    #         top_cards.append(self.piles[i].get_top_card())
+    #         pile_names.append("cp" + str(i + 1))
+        
+    #     to_return = f"COMMUNITY SECTION\n{name} added {card} to {pile}\n"
+    #     cp_string = f""
+    #     for i in range(len(top_cards)):
+    #         if i % 4 == 0:
+    #             to_return += "[ "
+    #             cp_string = "  "
+            
+    #         # to_print = top_cards[i].__repr__() #this gets an fstring
+    #         to_print = top_cards[i].stringify()
+    #         cp_string += pile_names[i]
+            
+    #         to_print += " "
+    #         cp_string += " "
+    #         if len(to_print) < 4:
+    #             to_print += " "
+
+    #         to_return += to_print
+
+    #         if i % 4 == 3 or i == len(top_cards) - 1:
+    #             to_return = to_return[:-1]
+    #             to_return += "]\n" + cp_string + "\n\n"
+    #         else:
+    #             to_return += " "
+    #             cp_string += " "
+        
+    #     return to_return
+
+
+
+
+
+
+    def get_board(self, name, card, pile): 
+        to_return = [[f"COMMUNITY SECTION"], [f"{name} added {card} to {pile}\n"]]
         top_cards = []
         pile_names = []
         piles_count = 0
         with self.count_mutex:
             piles_count = self.piles_count
         for i in range(piles_count):
-            top_cards.append(self.piles[i].get_top_card())
+            top_cards.append(self.piles[i].get_top_card().stringify())
             pile_names.append("cp" + str(i + 1))
         
-        to_return = f"COMMUNITY SECTION\n{name} added {card} to {pile}\n"
-        cp_string = f""
-        for i in range(len(top_cards)):
-            if i % 4 == 0:
-                to_return += "[ "
-                cp_string = "  "
-            
-            # to_print = top_cards[i].__repr__() #this gets an fstring
-            to_print = top_cards[i].stringify()
-            cp_string += pile_names[i]
-            
-            to_print += " "
-            cp_string += " "
-            if len(to_print) < 4:
-                to_print += " "
-
-            to_return += to_print
-
-            if i % 4 == 3 or i == len(top_cards) - 1:
-                to_return = to_return[:-1]
-                to_return += "]\n" + cp_string + "\n\n"
-            else:
-                to_return += " "
-                cp_string += " "
-        
-        return to_return
-
-
-
-
-
-
-    def temp_get_board(self, name, card, pile): # think about printing unupdated data, would have to lock whole CS
-        to_return = []
-        pile_names = []
-        piles_count = 0
-        with self.count_mutex:
-            piles_count = self.piles_count
-        for i in range(piles_count):
-            top_cards.append(self.piles[i].get_top_card())
-            pile_names.append("cp" + str(i + 1))
-        
-        # to_return = f"COMMUNITY SECTION\n{name} added {card} to {pile}\n"
-        # cp_string = f""
         curr_idx = 0
         for i in range(len(top_cards)):
             if i % 4 == 0:
-                to_return.append(top_cards[i])
-                curr_idx += 1
+                to_return.append([top_cards[i]])
+                to_return.append([pile_names[i]])
+                curr_idx += 2
             else:
                 to_return[curr_idx].append(top_cards[i])
+                to_return[curr_idx + 1].append(pile_names[i])
         
         return to_return
+        # should look like: (2D LIST)
+        # [[COMMUNITY SECTION],
+        #  [cli added 2D to cp1],
+        #  [2D, 4D, 5S, 6S],
+        #  [cp1, cp2, cp3, cp4],
+        #  [1H, 2H]
+        #  [cp5, cp6]]

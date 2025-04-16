@@ -97,14 +97,17 @@ def establish_player():
     sio.emit("player_join", {"name": name})
     sio.wait()
 
+
 @sio.on("get_scores")
 def send_score(data):
     global name, hand
     sio.emit("my_score", {"score": hand.get_score(), "name": name})
 
+
 @sio.on("game_joined")
 def handle_game_joined(data):
     sio.wait()
+
 
 @sio.on("cp_move_result")
 def cp_move_result(data):
@@ -120,52 +123,6 @@ def cp_move_result(data):
 
     cp_move_done.set()
 
-@sio.on("cs_updated")
-def update_cs(data):
-    global community_win, print_mutex
-
-    community_win.clear()
-    
-    board = data.get("board").split("\n")
-    community_win.addstr(1, 1, board[0], curses.color_pair(4))
-    community_win.addstr(2, 1, board[1], curses.color_pair(5))
-    board = "\n".join(board[2:]) # put board back into one string 
-
-    y, x = 4, 1
-    i = 0
-    while i < len(board):
-        c = board[i]
-        if c in ['H', 'D']: # red 
-            # 2 digits to rewrite in color
-            if i >= 2 and board[i - 2].isdigit() and board[i - 1].isdigit():
-                community_win.attron(curses.color_pair(1))
-                community_win.addch(y, x - 2, board[i - 2])
-                community_win.addch(y, x - 1, board[i - 1])
-                community_win.attroff(curses.color_pair(1))
-            # 1 digit to rewrite in color
-            elif i >= 1 and board[i - 1].isdigit():
-                community_win.attron(curses.color_pair(1))
-                community_win.addch(y, x - 1, board[i - 1])
-                community_win.attroff(curses.color_pair(1))
-            # write the letter 
-            community_win.attron(curses.color_pair(1))
-            community_win.addch(y, x, c)
-            community_win.attroff(curses.color_pair(1))
-        else: # black 
-            community_win.attron(curses.color_pair(2))
-            community_win.addch(y, x, c)
-            community_win.attroff(curses.color_pair(2))
-
-        x += 1
-        if c == '\n':
-            y += 1
-            x = 0
-        i += 1
-
-    community_win.border()
-    
-    with print_mutex:  
-        community_win.refresh()
 
 @sio.on("reset")
 def reset(data): 
@@ -186,6 +143,7 @@ def reset(data):
     input_win.getstr().decode("utf-8").lower()
     sio.emit("player_rejoin")
            
+
 @sio.on("game_over")
 def game_over(data): 
     global continue_loop
@@ -199,6 +157,7 @@ def game_over(data):
     with print_mutex: 
         community_win.refresh()
 
+
 def print_scores(scores):
     global community_win, print_mutex
     community_win.clear()
@@ -209,13 +168,14 @@ def print_scores(scores):
     with print_mutex: 
         community_win.refresh()
 
+
 @sio.on("start_game")
 def query_loop(): 
     global error_win, input_win, name, hand, print_mutex, continue_loop
     curses.echo()
     continue_loop = True
 
-    community_win.clear()
+    community_win.clear()   # TODO these code chunks dealing w windows need to become functions
     community_win.border()
     with print_mutex: 
         community_win.refresh()
@@ -285,6 +245,7 @@ def query_loop():
     
     sio.emit("test", {"parameter": "After loop"})
 
+
 def validate_card(card_name):
     print(card_name)
     card_letter = card_name[-1]
@@ -298,6 +259,7 @@ def validate_card(card_name):
             return Status.INVALID_CARD
     return Status.SUCCESS
 
+
 def print_board(print_mutex):
     global hand_win, hand
 
@@ -305,38 +267,65 @@ def print_board(print_mutex):
     hand_win.border()
 
     hand_win.addstr(1, 1, f"{name}'s HAND", curses.color_pair(4))
-    # hand_win.addstr(3, 1, "nertz: ")
-    # hand_win.addstr(3, 8, f"{hand.top_nertz()}", curses.color_pair(hand.top_nertz().get_color().value + 1))
-    print_cards(3, 1, [hand.top_nertz()], "nertz")
+    print_cards(3, 1, [hand.top_nertz()], "nertz", hand_win)
     hand_win.addstr(4, 1, f"         {hand.count_nertz()}")
-    print_cards(6, 1, hand.get_wp(0).get_cards(), "wp1")
-    print_cards(7, 1, hand.get_wp(1).get_cards(), "wp2")
-    print_cards(8, 1, hand.get_wp(2).get_cards(), "wp3")
-    print_cards(9, 1, hand.get_wp(3).get_cards(), "wp4")
-    print_cards(11, 1, hand.get_top3(), "draw_pile")
+    print_cards(6, 1, hand.get_wp(0).get_cards(), "wp1", hand_win)
+    print_cards(7, 1, hand.get_wp(1).get_cards(), "wp2", hand_win)
+    print_cards(8, 1, hand.get_wp(2).get_cards(), "wp3", hand_win)
+    print_cards(9, 1, hand.get_wp(3).get_cards(), "wp4", hand_win)
+    print_cards(11, 1, hand.get_top3(), "draw_pile", hand_win)
 
     with print_mutex:
         hand_win.refresh()         
 
 
-def print_cards(loc1, loc2, cards, pile_name):
+@sio.on("cs_updated")
+def update_cs(data):
+    global community_win, print_mutex
+    community_win.clear()
+    
+    board = data.get("board")
+    community_win.addstr(1, 1, board[0][0], curses.color_pair(4))
+    community_win.addstr(2, 1, board[1][0], curses.color_pair(5))
+
+    for i in range(0, len(board[2:]), 2):
+        print_cp_cards(i + 3, 1, board[i + 2], board[i + 3], community_win)
+
+    community_win.border()
+    
+    with print_mutex:  
+        community_win.refresh()
+
+
+def print_cards(loc1, loc2, cards, pile_name, window):
     if pile_name == "nertz": 
-        hand_win.addstr(loc1, loc2, f"{pile_name}:  [")
+        window.addstr(loc1, loc2, f"{pile_name}:  [")
         running_len = len(pile_name) + 4
     else: 
-        hand_win.addstr(loc1, loc2, f"{pile_name}:    [")
+        window.addstr(loc1, loc2, f"{pile_name}:    [")
         running_len = len(pile_name) + 6
     for i, card in enumerate(cards):
         if card.get_value() != 0:
             if i == len(cards) - 1:
-                hand_win.addstr(loc1, loc2 + running_len, f"{card}", curses.color_pair(card.get_color().value + 1))
+                window.addstr(loc1, loc2 + running_len, f"{card}", curses.color_pair(card.get_color().value + 1))
                 running_len += len(card.stringify())
             else:
-                hand_win.addstr(loc1, loc2 + running_len, f"{card}, ", curses.color_pair(card.get_color().value + 1))
+                window.addstr(loc1, loc2 + running_len, f"{card}, ", curses.color_pair(card.get_color().value + 1))
                 running_len += len(card.stringify()) + 2
     
-    hand_win.addstr(loc1, loc2 + running_len, "]")
+    window.addstr(loc1, loc2 + running_len, "]")
     
+def print_cp_cards(loc1, loc2, cards, pile_names, window):
+    real_cards = []
+    running_len = 0
+
+    for card in cards:
+        real_cards.append(Card.card_with_name(card))
+
+    for i in range(len(real_cards)):
+        window.addstr(loc1, loc2 + running_len, f"[ {real_cards[i]} ]", curses.color_pair(real_cards[i].get_color().value + 1))
+        window.addstr(loc1 + 1, loc2 + running_len + 2, f"{pile_names[i]}")
+        running_len += len(real_cards[i].stringify()) + 4
 
 
 curses.wrapper(main)
