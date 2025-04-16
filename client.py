@@ -143,7 +143,7 @@ class Client():
                                     self.cp_move_done.wait()
                                 else:
                                     self.windows.error_write("Invalid move")
-                            elif "wp" in qself.self.uery[2]: 
+                            elif "wp" in self.query[2]: 
                                 result = self.hand.move_to_wp(self.query[1], self.query[2])
                                 if result == Status.INVALID_MOVE: 
                                     self.windows.error_write("Invalid move")

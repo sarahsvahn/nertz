@@ -162,6 +162,7 @@ class Windows():
         
         with self.print_mutex:  
             self.community_win.refresh()
+            self.input_win.refresh()
     
     def print_scores(self, scores):
         self.community_win.clear()

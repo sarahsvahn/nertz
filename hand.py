@@ -162,7 +162,7 @@ class Hand():
                 return Status.INVALID_MOVE
         
         new_cards = -1
-        og_location = self.find_og_location(card, pile)
+        og_location = self.find_og_location(card, "WP")
         if og_location == Origin.NOT_FOUND:
             return Status.INVALID_MOVE
         elif og_location == Origin.NERTZ: 
