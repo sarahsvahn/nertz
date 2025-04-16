@@ -64,7 +64,7 @@ class Windows():
     def write(self, window, str, y, x):
         window.clear()
         window.border()
-        if str == "> :" or "HAND" in str or str == "COMMUNITY SECTION":
+        if str == "> " or "HAND" in str or str == "COMMUNITY SECTION":
             window.addstr(y, x, str, curses.color_pair(4))
         else: 
             window.addstr(y, x, str)

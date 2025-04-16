@@ -76,7 +76,7 @@ class Client():
                 remove_location = data.get("origin")
                 self.hand.remove_from_origin(Origin[remove_location])
             else: 
-                self.windows.error_write(1, 1, "Move failed. RIPPPPP that sucks.")
+                self.windows.error_write("Move failed. RIPPPPP that sucks.")
                 self.windows.error_refresh()
 
             self.cp_move_done.set()
