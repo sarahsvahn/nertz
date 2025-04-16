@@ -176,6 +176,7 @@ def query_loop():
     with print_mutex:
         input_win.refresh()
     query = input_win.getstr().decode("utf-8").lower()
+
     while query != "exit" and continue_loop: 
         error_win.clear()
         error_win.border()
@@ -223,8 +224,10 @@ def query_loop():
         with print_mutex:
             input_win.refresh()     
 
-        if not continue_loop:
+        if continue_loop:
             query = input_win.getstr().decode("utf-8").lower()
+        # else:
+        #     query = "exit"
     
     sio.emit("test")
 
