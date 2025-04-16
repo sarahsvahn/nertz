@@ -35,7 +35,7 @@ class WorkingPile():
     
     def get_top_card(self):
         if len(self.cards) == 0:
-            return Card("S", -1) # empty card 
+            return Card("S", 0) # empty card 
         return self.cards[-1]
     
     def in_pile(self, card):

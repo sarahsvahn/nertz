@@ -79,6 +79,7 @@ class CommunitySection():
         to_return = [[f"COMMUNITY SECTION"], [f"{name} added {card} to {pile}\n"]]
         top_cards = []
         pile_names = []
+        
         piles_count = 0
         with self.count_mutex:
             piles_count = self.piles_count

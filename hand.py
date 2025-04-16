@@ -1,3 +1,12 @@
+# hand.py
+# Authors: Cliodhna Reidy, Sarah Svahn, Owen Thomas
+# 
+# This file contains the hand class which represents an individual user's 
+# playing cards. The cards are divided into four working piles, a 
+# nertz pile, and a draw pile. Each player has a score which is updated
+# as appropriate as cards as discarded/moved.
+
+
 from working_pile import WorkingPile
 from card import Card
 from draw_pile import DrawPile
@@ -10,6 +19,12 @@ class Hand():
         self.reset_hand()
 
     def reset_hand(self):
+        ''' 
+        Parameters: None
+        Purpose: Resets hand back to default (empty piles, new deck)
+        Effects: Updates all Hand member variables back to default
+        Returns: None
+        ''' 
         deck = Hand.generate_deck()
         self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
                               WorkingPile(deck[2]), WorkingPile(deck[3])]
@@ -18,8 +33,15 @@ class Hand():
         self.draw_pile = DrawPile(deck[17:])
         self.score = -26
     
+
     @staticmethod
     def generate_deck():
+        ''' 
+        Parameters: None
+        Purpose: Generates a full deck of cards
+        Effects: None
+        Returns: Shuffled deck of cards as a list of Cards
+        ''' 
         deck = []
         for i in range(1, 14):
             for j in range(4):
@@ -27,27 +49,76 @@ class Hand():
         # random.shuffle(deck) #TODO Add back in when ready
         return deck 
     
+
     def shuffle(self):
+        ''' 
+        Parameters: None
+        Purpose: Shuffle a list
+        Effects: Shuffles the draw_pile
+        Returns: None
+        ''' 
         self.draw_pile.shuffle_cards()
 
+
     def draw(self): 
+        ''' 
+        Parameters: None
+        Purpose: Draws top three cards from draw_pile
+        Effects: Modifies draw_pile
+        Returns: List of 3 new top cards on draw_pile
+        ''' 
         return self.draw_pile.draw_three()
     
+
+    def get_top3(self): 
+        ''' 
+        Parameters: None
+        Purpose: Gets top three cards from draw_pile
+        Effects: None
+        Returns: List of 3 top cards on draw_pile
+        ''' 
+        return self.draw_pile.get_top_three()
+    
+
     def get_score(self): 
+        ''' 
+        Parameters: None
+        Purpose: Gets score
+        Effects: None
+        Returns: Hand's score
+        ''' 
         return self.score
 
+
     def top_nertz(self):
+        ''' 
+        Parameters: None
+        Purpose: Gets top element from nertz_pile
+        Effects: None
+        Returns: Top element from nertz_pile, returns Card S0 if empty
+        ''' 
         if len(self.nertz_pile) == 0: 
             return Card("S", "0")
         return self.nertz_pile[-1]
     
+
     def get_wp(self, idx): 
+        ''' 
+        Parameters: idx representing working pile index
+        Purpose: Gets the working pile at a specifed index
+        Effects: None
+        Returns: Hand's working_pile at specified index
+        ''' 
         return self.working_piles[idx]
     
-    def get_top3(self): 
-        return self.draw_pile.get_top_three()
     
     def find_og_location(self, card, pile):
+        ''' 
+        Parameters: card - original Card, pile - either string "WP" or "CP"
+        Purpose: Find the original location of a card before moving
+        Effects: None
+        Returns: Hand's working_pile at specified index
+        ''' 
         if card == self.top_nertz(): 
             return Origin.NERTZ
         elif len(self.get_top3()) > 0 and card == self.get_top3()[0]: 
@@ -60,43 +131,71 @@ class Hand():
                     return list(Origin)[index]
         return Origin.NOT_FOUND
     
-    def move_to_wp(self, card_name, pile): # TODO refactor this function to use find_og_location
-        print(card_name[-1].upper())
-        card = Card(card_name[-1].upper(), card_name[:-1])
-        valid = False
+    
+    def validate_wp(self, pile):
         if pile[:-1] == "wp":
             if pile[-1].isnumeric():
-                if int(pile[-1]) <= 4:
-                    top_wp_card = self.working_piles[int(pile[-1]) - 1].get_top_card()
-                    if top_wp_card.get_value() == -1 or top_wp_card.next_wp(card): 
-                        valid = True
-        if not valid: 
-            print("invalid move") # TODO print to a window 
-            return Status.INVALID_MOVE
+                if int(pile[-1]) <= 4 and int(pile[-1]) > 0:
+                    return True
+        return False
+
+    
+    def move_to_wp(self, card_name, pile): # TODO refactor this function to use find_og_location
+        ''' 
+        Parameters: card_name - string representing card, pile - string
+                    representing working pile destination
+        Purpose: Validates and executes a working pile move
+        Effects: Moves card to specified working pile if move is valid
+        Returns: Status.SUCCESS or Status.INVALID_MOVE
+        ''' 
+        # print(card_name[-1].upper())
+        # card = Card(card_name[-1].upper(), card_name[:-1])
+
+        card = Card.card_with_name(card_name)
+        if self.validate_wp(pile):
+            top_wp_card = self.working_piles[int(pile[-1]) - 1].get_top_card()
+            if top_wp_card.get_value() != 0 and not top_wp_card.next_wp(card): 
+                print("invalid move") # TODO print to a window 
+                return Status.INVALID_MOVE
+        
         # check that card is available to move
         new_cards = -1
         og_location = -1 # TODO why is this never used?? can we delete??
+
         if card == self.top_nertz(): 
+            # card being moved it top of nertz
             new_cards = [self.nertz_pile.pop()]
             self.score += 2
             og_location = Origin.NERTZ
         elif len(self.get_top3()) > 0 and card == self.get_top3()[0]: 
+            # card being moved is top of draw pile
             new_cards = [self.draw_pile.take_card()]
             og_location = Origin.DRAW
         else:
+            # card being moved is in a working pile
             for index, working_pile in enumerate(self.working_piles): 
                 if working_pile.in_pile(card):
                     new_cards = working_pile.remove_cards(card)
                     og_location = list(Origin)[index]
-        if new_cards == -1: # can't find card
+    
+        if new_cards == -1:
+            # can't find card
             return Status.INVALID_MOVE
 
-        # move card 
-        if pile[:-1] == "wp":
-            working_pile = self.working_piles[int(pile[-1]) - 1]
-            working_pile.put_cards(new_cards)
+        # actually move card 
+        # if pile[:-1] == "wp": #We dont need this check because we validate pile
+        working_pile = self.working_piles[int(pile[-1]) - 1]
+        working_pile.put_cards(new_cards)
+        return Status.SUCCESS
 
     def remove_from_origin(self, origin): 
+        ''' 
+        Parameters: origin - an Origin enum
+        Purpose: Removes the top card from a specified origin (to the
+                 Community Section)
+        Effects: Removes top card from specified Hand pile
+        Returns: None
+        ''' 
         if origin == Origin.NERTZ:
             self.nertz_pile.pop(-1)
             self.score += 2
@@ -106,8 +205,22 @@ class Hand():
             self.working_piles[origin.value].remove_top_card()
         self.score += 1 # a card was moved to CS
 
+
     def has_nertz(self):
+        ''' 
+        Parameters: None
+        Purpose: Checks if Hand has nertz
+        Effects: None
+        Returns: Whether nertz pile is empty
+        ''' 
         return len(self.nertz_pile) == 0
 
+
     def count_nertz(self):
+        ''' 
+        Parameters: None
+        Purpose: Checks how many cards left in nertz pile
+        Effects: None
+        Returns: Number of cards in nertz pile
+        ''' 
         return len(self.nertz_pile)
