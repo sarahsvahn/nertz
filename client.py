@@ -169,6 +169,8 @@ def query_loop():
         community_win.refresh()
         
     print_board(print_mutex)
+    input_win.clear()
+    input_win.border()
     input_win.addstr(1, 1, "> ")
 
     with print_mutex:
