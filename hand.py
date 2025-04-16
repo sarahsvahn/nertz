@@ -35,8 +35,8 @@ class Hand():
         deck = Hand.generate_deck()
         self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
                               WorkingPile(deck[2]), WorkingPile(deck[3])]
-        # self.nertz_pile = deck[4:17] #TODO uncomment this line
-        self.nertz_pile = [Card("D", "1")] #TODO remove this line
+        self.nertz_pile = deck[4:17] #TODO uncomment this line
+        # self.nertz_pile = [Card("D", "1")] #TODO remove this line
         self.draw_pile = DrawPile(deck[17:])
         self.score = -26
     
@@ -53,7 +53,7 @@ class Hand():
         for i in range(1, 14):
             for j in range(4):
                 deck.append(Card(Suit(j).name, i))
-        # random.shuffle(deck) #TODO Add back in when ready
+        random.shuffle(deck) #TODO Add back in when ready
         return deck 
     
 
