@@ -17,6 +17,7 @@ import curses
 # TODO indicate which card you are allowed to take from top3 and wps 
 # TODO mouse is moved to cp after someone updates that, shouldn't happen 
 # TODO make name a member variable of Hand, with a getter and a setter func
+# TODO say who got nertz
 
 sio = socketio.Client()
 
@@ -122,11 +123,15 @@ def reset(data):
     scores = data.get("scores")
     print_scores(scores)
     hand.reset_hand()
+    
     input_win.clear()
     input_win.border()
+    hand_win.clear()
+    hand_win.border()
     input_win.addstr(1, 1, "Enter any key to start the next round: ")
     with print_mutex:
         input_win.refresh() 
+        hand_win.refresh()
     input_win.getstr().decode("utf-8").lower()
     sio.emit("player_rejoin")
            
@@ -158,6 +163,11 @@ def query_loop():
 
     continue_loop = True
 
+    community_win.clear()
+    community_win.border()
+    with print_mutex: 
+        community_win.refresh()
+        
     print_board(print_mutex)
     input_win.addstr(1, 1, "> ")
 
