@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from flask_socketio import SocketIO, emit
 from game import Game
 import threading

@@ -15,8 +15,7 @@ import curses
 from windows import Windows
 
 # TODO shuffle
-# TODO change starting page 
-# TODO validate against m 1-h wp3 so there's no error 
+# TODO function contracts and file headers 
 
 class Client():
     def __init__(self, stdscr):
@@ -39,6 +38,8 @@ class Client():
         Effects: None
         Returns: Status.INVALID_CARD or Status.SUCCESS
         ''' 
+        if not card_name.isalnum(): 
+            return Status.INVALID_CARD
         card_letter = card_name[-1]
         if card_letter.isalpha():
             if card_letter.upper() not in ["D", "H", "C", "S"]:
@@ -112,6 +113,8 @@ class Client():
             Effects: None
             Returns: None
             ''' 
+            self.windows.error_write("Waiting for other players to join")
+            self.windows.input_refresh()
             self.sio.wait()
 
         @self.sio.on("cp_move_result")
@@ -159,6 +162,7 @@ class Client():
 
         @self.sio.on("start_game")
         def query_loop(): 
+            self.windows.error_write("Game started, make a move!")
             curses.echo()
 
             self.windows.community_refresh()
@@ -178,7 +182,7 @@ class Client():
                     self.query = self.query.split()
                     if self.query[0] == 'm' and len(self.query) == 3:
                         if Client.validate_card(self.query[1]) == Status.INVALID_CARD:
-                            self.windows.error_write("Invalid move")
+                            self.windows.error_write("Invalid card")
                         else:
                             if "cp" in self.query[2]:
                                 origin = self.hand.find_og_location(Card.card_with_name(self.query[1]), "CP")

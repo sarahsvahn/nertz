@@ -29,7 +29,7 @@ class Windows():
         curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_WHITE)
         
         if self.init_windows(stdscr) == Status.FAILED_JOIN:
-            sys.exit("Please resize terminal")
+            sys.exit("Please make your terminal bigger and try again.")
     
     def init_windows(self, stdscr):
         height, width = stdscr.getmaxyx()
@@ -60,7 +60,7 @@ class Windows():
             self.hand_win.refresh()
 
             self.error_win.border()
-            self.error_win.addstr(1, 1, "Errors:", curses.color_pair(4))
+            self.error_win.addstr(1, 1, "", curses.color_pair(4))
             self.error_win.refresh()  
                         
     def write(self, window, str, y, x):
