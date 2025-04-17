@@ -16,8 +16,7 @@ from windows import Windows
 
 # TODO shuffle
 # TODO change starting page 
-# TODO print everyone's nertz pile counts 
-# TODO make flask server 
+# TODO validate against m 1-h wp3 so there's no error 
 
 class Client():
     def __init__(self, stdscr):

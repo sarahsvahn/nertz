@@ -164,7 +164,7 @@ class Windows():
         for i in range(0, len(board[3:]), 2):
             Windows.print_cp_cards(i + 4, 1, board[i + 3], board[i + 4], self.community_win)
 
-        self.community_win.addstr(len(board) + 2, 1, board[2][0], curses.color_pair(4))
+        self.community_win.addstr(len(board) + 2, 1, board[2][0], curses.color_pair(5))
         self.community_win.border()
         
         with self.print_mutex:  

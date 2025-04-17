@@ -43,7 +43,7 @@ class CommunitySection():
             nertz_str += str(player) + ": " + str(count) + ", "
         nertz_str = nertz_str[:-2]
         to_return.append([nertz_str])
-
+        
         piles_count = 0
         with self.count_mutex:
             piles_count = self.piles_count
@@ -51,7 +51,7 @@ class CommunitySection():
             top_cards.append(self.piles[i].get_top_card().stringify())
             pile_names.append("cp" + str(i + 1))
         
-        curr_idx = 0
+        curr_idx = 1 # why are we appendeing startign at 0 i think it should be 4? or maybe 1 because were off by 1
         for i in range(len(top_cards)):
             if i % 4 == 0:
                 to_return.append([top_cards[i]])
@@ -60,5 +60,5 @@ class CommunitySection():
             else:
                 to_return[curr_idx].append(top_cards[i])
                 to_return[curr_idx + 1].append(pile_names[i])
-        
+
         return to_return
