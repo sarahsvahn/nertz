@@ -1,3 +1,11 @@
+# client.py
+# Authors: Cliodhna Reidy, Sarah Svahn, Owen Thomas
+# 
+# This file contains the client class and main functionality of client. Handles
+# connection to server, and handles the query loop in which a player enters
+# their moves. Communicates directly with server to play game.
+# 
+
 from hand import Hand
 import threading
 import socketio
