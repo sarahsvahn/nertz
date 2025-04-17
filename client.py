@@ -15,6 +15,9 @@ import curses
 from windows import Windows
 
 # TODO shuffle
+# TODO change starting page 
+# TODO print everyone's nertz pile counts 
+# TODO make flask server 
 
 class Client():
     def __init__(self, stdscr):
@@ -152,7 +155,8 @@ class Client():
         @self.sio.on("cs_updated")
         def update_cs(data):
             board = data.get("board")
-            self.windows.print_cs(board)
+            nertz_updated = data.get("nertz")
+            self.windows.print_cs(board, nertz_updated)
 
         @self.sio.on("start_game")
         def query_loop(): 
@@ -183,12 +187,16 @@ class Client():
                                     self.cp_move_done.clear()
                                     self.sio.emit("cp_move", {'card': self.query[1], 'pile': self.query[2], "name": self.hand.get_name(), "origin": origin.name})
                                     self.cp_move_done.wait()
+                                    if origin == Origin.NERTZ: 
+                                        self.sio.emit("update_nertz", {"name": self.hand.get_name(), "count": self.hand.count_nertz()})
                                 else:
                                     self.windows.error_write("Invalid move")
                             elif "wp" in self.query[2]: 
                                 result = self.hand.move_to_wp(self.query[1], self.query[2])
                                 if result == Status.INVALID_MOVE: 
                                     self.windows.error_write("Invalid move")
+                                elif result == Origin.NERTZ: 
+                                    self.sio.emit("update_nertz", {"name": self.hand.get_name(), "count": self.hand.count_nertz()})
                             else: 
                                 self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
                     elif self.query == ['d']: 

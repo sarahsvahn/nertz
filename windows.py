@@ -14,6 +14,8 @@ class Windows():
         curses.curs_set(1)
         curses.echo()
         stdscr.bkgd(' ', curses.color_pair(3))
+
+        self.last_move = ""
         
         # colors 
         curses.can_change_color()
@@ -151,14 +153,18 @@ class Windows():
             window.addstr(y + 1, x + running_len + 2, f"{pile_names[i]}")
             running_len += len(real_cards[i].stringify()) + 4
 
-    def print_cs(self, board):
+    def print_cs(self, board, nertz_changed):
         self.community_win.clear()
         self.community_win.addstr(1, 1, board[0][0], curses.color_pair(4))
-        self.community_win.addstr(2, 1, board[1][0], curses.color_pair(5))
+        # self.community_win.addstr(2, 1, board[1][0], curses.color_pair(5))
+        if not nertz_changed:
+            self.last_move = board[1][0]
+        self.community_win.addstr(2, 1, self.last_move, curses.color_pair(5))
 
-        for i in range(0, len(board[2:]), 2):
-            Windows.print_cp_cards(i + 4, 1, board[i + 2], board[i + 3], self.community_win)
+        for i in range(0, len(board[3:]), 2):
+            Windows.print_cp_cards(i + 4, 1, board[i + 3], board[i + 4], self.community_win)
 
+        self.community_win.addstr(len(board) + 2, 1, board[2][0], curses.color_pair(4))
         self.community_win.border()
         
         with self.print_mutex:  
@@ -170,7 +176,7 @@ class Windows():
         self.community_win.border()
         for i, player in enumerate(scores):
             self.community_win.addstr(i + 1, 1, f"{player}: {scores[player][0]} + {scores[player][1]} = {scores[player][0] + scores[player][1]}")
-        self.community_win.addstr(len(scores) + 2, 1, f"{name} got nertz!", curses.color_pair(4))
+        self.community_win.addstr(len(scores) + 2, 1, f"{name} got nertz!", curses.color_pair(5))
         with self.print_mutex: 
             self.community_win.refresh()
         

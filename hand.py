@@ -35,12 +35,11 @@ class Hand():
         deck = Hand.generate_deck()
         self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
                               WorkingPile(deck[2]), WorkingPile(deck[3])]
-        self.nertz_pile = deck[4:17] #TODO uncomment this line
-        # self.nertz_pile = [Card("D", "1")] #TODO remove this line
+        # self.nertz_pile = deck[4:17] #TODO uncomment this line
+        self.nertz_pile = [Card("D", "1")] #TODO remove this line
         self.draw_pile = DrawPile(deck[17:])
         self.score = -26
     
-
     @staticmethod
     def generate_deck():
         ''' 
@@ -169,7 +168,7 @@ class Hand():
         # actually move card 
         working_pile = self.working_piles[int(pile[-1]) - 1]
         working_pile.put_cards(new_cards)
-        return Status.SUCCESS
+        return og_location
 
     def remove_from_origin(self, origin): 
         ''' 

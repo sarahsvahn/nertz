@@ -22,8 +22,10 @@ def handle_connect():
 @socketio.on("player_join")
 def join_game(data):
     print(data)
+    name = data.get("name")
     with mutex:
-        players.append((request.sid, data.get("name")))
+        players.append((request.sid, name))
+        game.update_nertz_count(name, 13)
         emit("game_joined")
         if len(players) == num_players:
             print("about to emit start")
@@ -52,7 +54,7 @@ def cp_move(data):
     emit("cp_move_result", {"status": result.name, "card": card, "origin": data.get("origin")})
     if result == Status.SUCCESS: 
         print(game.get_board(name, card, pile))
-        emit("cs_updated", {"board": game.get_board(name, card, pile)}, broadcast=True)
+        emit("cs_updated", {"board": game.get_board(name, card, pile), "nertz": False}, broadcast=True)
 
 @socketio.on("has_nertz")
 def game_over(data): 
@@ -78,6 +80,13 @@ def get_player_score(data):
             emit("reset", {"scores": scores, "nertz": data.get("nertz")}, broadcast=True)
             game.reset()
     print(name, " ", score)
+
+@socketio.on("update_nertz")
+def update_nertz(data): 
+    name = data.get("name")
+    count = data.get("count")
+    game.update_nertz_count(name, count)
+    emit("cs_updated", {"board": game.get_board(), "nertz": True}, broadcast=True)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
