@@ -33,11 +33,16 @@ class CommunitySection():
             # else:
             #     return Status.INVALID_MOVE
 
-
-    def get_board(self, name, card, pile): 
+    def get_board(self, name, card, nertz_count, pile): 
         to_return = [[f"COMMUNITY SECTION"], [f"{name} added {card} to {pile}\n"]]
         top_cards = []
         pile_names = []
+
+        nertz_str = "Nertz Counts\n"
+        for player, count in nertz_count.items():
+            nertz_str += str(player) + ": " + str(count) + ", "
+        nertz_str = nertz_str[:-2]
+        to_return.append([nertz_str])
 
         piles_count = 0
         with self.count_mutex:
