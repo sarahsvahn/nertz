@@ -15,7 +15,6 @@ class WorkingPile():
     def __init__(self, card):
         self.cards = [card]
 
-
     def get_cards(self): 
         ''' 
         Parameters: None
@@ -24,7 +23,6 @@ class WorkingPile():
         Returns: Top card of workingPile
         ''' 
         return self.cards
-
 
     def remove_top_card(self): 
         ''' 
@@ -38,7 +36,6 @@ class WorkingPile():
             return self.cards.pop()
         else:
             return Status.EMPTY
-    
 
     def remove_cards(self, card):
         ''' 
@@ -54,7 +51,6 @@ class WorkingPile():
         removed = self.cards[idx:]
         self.cards = self.cards[:idx]
         return removed
-    
 
     def put_cards(self, cards:list[Card]):
         ''' 
@@ -72,16 +68,13 @@ class WorkingPile():
             return Status.SUCCESS
         return Status.INVALID_MOVE
     
-
     def get_top_card(self):
         if len(self.cards) == 0:
             return Card("S", 0) # empty card 
         return self.cards[-1]
-    
 
     def in_pile(self, card):
         return card in self.cards
-        
         
     def __repr__(self):
         return f"{self.cards}"

@@ -2,8 +2,8 @@
 # Authors: Cliodhna Reidy, Sarah Svahn, Owen Thomas
 # 
 # This file contains the DrawPile class which represents the pile of cards 
-# that a player uses to draw from. The only instances of the DrawPile class 
-# exist in the Hand class. The DrawPile has two piles of cards, faceUp and 
+# that a player uses to draw from. The only instance of the DrawPile class 
+# exists in the Hand class. The DrawPile has two piles of cards, faceUp and 
 # faceDown to simulate actual gameplay.
 #
 
@@ -15,7 +15,6 @@ class DrawPile():
         self.faceDown = cards # top of deck (idx len - 1) is back
         self.faceUp = []      # first card is front (idx 0)
 
-
     def get_card(self):
         ''' 
         Parameters: None
@@ -26,7 +25,6 @@ class DrawPile():
         if len(self.faceUp) == 0:
             return Status.EMPTY
         return self.faceUp[0]
-
 
     def draw_three(self):
         ''' 
@@ -47,7 +45,6 @@ class DrawPile():
         
         return self.get_top_three() 
             
-
     def get_top_three(self):
         ''' 
         Parameters: None
@@ -62,7 +59,6 @@ class DrawPile():
             num_checked += 1
         return top_three
 
-
     def take_card(self): 
         ''' 
         Parameters: None
@@ -75,7 +71,6 @@ class DrawPile():
             return Status.EMPTY
         card = self.faceUp.pop(0)
         return (card) # TODO, used to be a tuple 
-
 
     def shuffle_cards(self): 
         ''' 
