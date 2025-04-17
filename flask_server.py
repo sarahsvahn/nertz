@@ -70,7 +70,7 @@ def get_player_score(data):
     result = game.set_score(name, score)
     scores = game.get_scores()
     if result: # all scores updated
-        if any(value > 100 for value in scores.values()):
+        if any(sum(pair) >= 100 for pair in scores.values()):
             print("GAME OVER")
             emit("game_over", {"scores": scores, "nertz": data.get("nertz")}, broadcast=True)
         else: 

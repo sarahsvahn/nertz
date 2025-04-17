@@ -113,32 +113,33 @@ class Windows():
         Windows.print_cards(7, 1, hand.get_wp(1).get_cards(), "wp2", self.hand_win)
         Windows.print_cards(8, 1, hand.get_wp(2).get_cards(), "wp3", self.hand_win)
         Windows.print_cards(9, 1, hand.get_wp(3).get_cards(), "wp4", self.hand_win)
-        Windows.print_cards(11, 1, hand.get_top3(), "draw_pile", self.hand_win)
+        Windows.print_cards(11, 1, hand.get_top3(), "draw pile", self.hand_win)
 
         with self.print_mutex:
             self.hand_win.refresh()         
 
     @classmethod
-    def print_cards(cls, loc1, loc2, cards, pile_name, window):
-        if pile_name == "nertz": 
-            window.addstr(loc1, loc2, f"{pile_name}:  [")
+    def print_cards(cls, y, x, cards, pile_name, window):
+        if pile_name == "nertz" or pile_name == "draw pile": 
+            window.addstr(y, x, f"{pile_name}:  [")
             running_len = len(pile_name) + 4
         else: 
-            window.addstr(loc1, loc2, f"{pile_name}:    [")
+            window.addstr(y, x, f"{pile_name}:    [")
             running_len = len(pile_name) + 6
         for i, card in enumerate(cards):
             if card.get_value() != 0:
                 if i == len(cards) - 1:
-                    window.addstr(loc1, loc2 + running_len, f"{card}", curses.color_pair(card.get_color().value + 1))
+                    window.addstr(y, x + running_len, f"{card}", curses.color_pair(card.get_color().value + 1))
                     running_len += len(card.stringify())
                 else:
-                    window.addstr(loc1, loc2 + running_len, f"{card}, ", curses.color_pair(card.get_color().value + 1))
+                    window.addstr(y, x + running_len, f"{card}, ", curses.color_pair(card.get_color().value + 1))
                     running_len += len(card.stringify()) + 2
-        
-        window.addstr(loc1, loc2 + running_len, "]")
+        if pile_name == "draw pile":
+            window.addstr(y + 1, x + len(pile_name + ":  ["), f"^")
+        window.addstr(y, x + running_len, "]")
 
     @classmethod
-    def print_cp_cards(cls, loc1, loc2, cards, pile_names, window):
+    def print_cp_cards(cls, y, x, cards, pile_names, window):
         real_cards = []
         running_len = 0
 
@@ -146,8 +147,8 @@ class Windows():
             real_cards.append(Card.card_with_name(card))
 
         for i in range(len(real_cards)):
-            window.addstr(loc1, loc2 + running_len, f"[ {real_cards[i]} ]", curses.color_pair(real_cards[i].get_color().value + 1))
-            window.addstr(loc1 + 1, loc2 + running_len + 2, f"{pile_names[i]}")
+            window.addstr(y, x + running_len, f"[ {real_cards[i]} ]", curses.color_pair(real_cards[i].get_color().value + 1))
+            window.addstr(y + 1, x + running_len + 2, f"{pile_names[i]}")
             running_len += len(real_cards[i].stringify()) + 4
 
     def print_cs(self, board):
@@ -168,9 +169,8 @@ class Windows():
         self.community_win.clear()
         self.community_win.border()
         for i, player in enumerate(scores):
-            self.community_win.addstr(i + 1, 1, f"{player}: {scores[player]}")
+            self.community_win.addstr(i + 1, 1, f"{player}: {scores[player][0]} + {scores[player][1]} = {scores[player][0] + scores[player][1]}")
         self.community_win.addstr(len(scores) + 2, 1, f"{name} got nertz!", curses.color_pair(4))
         with self.print_mutex: 
             self.community_win.refresh()
         
-

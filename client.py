@@ -15,9 +15,6 @@ import curses
 from windows import Windows
 
 # TODO shuffle
-# TODO indicate which card you are allowed to take from top3 and wps visually
-# TODO display round numbers 
-# TODO change the way scores are printed
 
 class Client():
     def __init__(self, stdscr):
