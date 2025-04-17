@@ -164,11 +164,13 @@ class Windows():
             self.community_win.refresh()
             self.input_win.refresh()
     
-    def print_scores(self, scores):
+    def print_scores(self, scores, name):
         self.community_win.clear()
         self.community_win.border()
         for i, player in enumerate(scores):
-            with self.print_mutex:
-                self.community_win.addstr(i + 1, 1, f"{player}: {scores[player]}")
+            self.community_win.addstr(i + 1, 1, f"{player}: {scores[player]}")
+        self.community_win.addstr(len(scores) + 2, 1, f"{name} got nertz!", curses.color_pair(4))
         with self.print_mutex: 
             self.community_win.refresh()
+        
+

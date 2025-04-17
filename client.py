@@ -13,17 +13,11 @@ from enums import Status, Origin
 from card import Card
 import curses 
 from windows import Windows
-import sys
 
-# TODO make name a member variable of Hand, with a getter and a setter func - done, not tested
-
-# TODO starting the next game doesn't work 
 # TODO shuffle
-# TODO alert player when the draw deck is turned over 
 # TODO indicate which card you are allowed to take from top3 and wps visually
-# TODO say who got nertz
-# TODO put everything in client.py in a class
-
+# TODO display round numbers 
+# TODO change the way scores are printed
 
 class Client():
     def __init__(self, stdscr):
@@ -40,7 +34,12 @@ class Client():
     
     @classmethod
     def validate_card(cls, card_name):
-        print(card_name)
+        ''' 
+        Parameters: card_name as a string
+        Purpose: Validates that card_name is a valid card name
+        Effects: None
+        Returns: Status.INVALID_CARD or Status.SUCCESS
+        ''' 
         card_letter = card_name[-1]
         if card_letter.isalpha():
             if card_letter.upper() not in ["D", "H", "C", "S"]:
@@ -53,6 +52,13 @@ class Client():
         return Status.SUCCESS     
 
     def establish_player(self):
+        ''' 
+        Parameters: None
+        Purpose: Gets player name and connects to server
+        Effects: Writes to input window, sets player's name in their Hand, 
+                 emits to server that player has joined
+        Returns: None
+        ''' 
         self.windows.input_write("Welcome to Nertz! Enter your name: ")
         name = self.windows.input_read()
         self.hand.set_name(name)
@@ -60,22 +66,53 @@ class Client():
         self.sio.emit("player_join", {"name": name})
         self.sio.wait()
     
-    def print_scores(self, scores):
-        self.windows.print_scores(scores)
+    def print_scores(self, scores, name):
+        ''' 
+        Parameters: scores
+        Purpose: Prints all player's scores to window
+        Effects: Prints to the community window
+        Returns: None
+        ''' 
+        self.windows.print_scores(scores, name)
 
-    # thread function
     def input_thread(self): 
+        ''' 
+        Parameters: None
+        Purpose: Gets input from input window, once input is received, sets 
+                 event
+        Effects: Updates query, event, and thread
+        Returns: None
+        Note: Used as the threading function for thread
+        ''' 
         self.query = self.windows.input_read().lower()
         self.event.set()
         self.thread = None
 
     def setup_handlers(self):
+        ''' 
+        Parameters: None
+        Purpose: Sets up all handler functions that communicate with server
+        Effects: None
+        Returns: None
+        ''' 
         @self.sio.on("get_scores")
         def send_score(data):
-            self.sio.emit("my_score", {"score": self.hand.get_score(), "name": self.hand.get_name()})
+            ''' 
+            Parameters: None
+            Purpose: Sends player's score to server my_score function
+            Effects: None
+            Returns: None
+            ''' 
+            self.sio.emit("my_score", {"score": self.hand.get_score(), "name": self.hand.get_name(), "nertz": data.get("nertz")})
 
         @self.sio.on("game_joined")
-        def handle_game_joined(data):
+        def handle_game_joined():
+            ''' 
+            Parameters: None
+            Purpose: Allows player to wait for all players to join
+            Effects: None
+            Returns: None
+            ''' 
             self.sio.wait()
 
         @self.sio.on("cp_move_result")
@@ -96,7 +133,7 @@ class Client():
             self.event.set()
 
             scores = data.get("scores")
-            self.print_scores(scores)
+            self.print_scores(scores, data.get("nertz"))
             self.hand.reset_hand()
 
             self.windows.input_refresh()
@@ -110,7 +147,7 @@ class Client():
         @self.sio.on("game_over")
         def game_over(data): 
             scores = data.get("scores")
-            Client.print_scores(scores)
+            Client.print_scores(scores, data.get("nertz"))
             winner = min(scores, key=scores.get)
             self.windows.community_write(f"{winner} is the winner!", len(scores) + 1, 1)
             self.windows.community_refresh()
@@ -165,7 +202,7 @@ class Client():
                     elif self.query == ['nertz']:
                         self.sio.emit("test", {"parameter": "You think you have nertz?"})
                         if self.hand.has_nertz():
-                            self.sio.emit("has_nertz")
+                            self.sio.emit("has_nertz", {"nertz": self.hand.get_name()})
                         else: 
                             self.windows.error_write("Your nertz pile is not empty. Keep playing.")
                     else: 

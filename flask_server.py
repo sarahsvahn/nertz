@@ -24,7 +24,7 @@ def join_game(data):
     print(data)
     with mutex:
         players.append((request.sid, data.get("name")))
-        emit("game_joined", {"name": data.get("name")})
+        emit("game_joined")
         if len(players) == num_players:
             print("about to emit start")
             emit("start_game", broadcast=True)
@@ -55,9 +55,9 @@ def cp_move(data):
         emit("cs_updated", {"board": game.get_board(name, card, pile)}, broadcast=True)
 
 @socketio.on("has_nertz")
-def game_over(): 
+def game_over(data): 
     print("HAS NERTZ")
-    emit("get_scores", {}, broadcast=True)
+    emit("get_scores", {"nertz": data.get("nertz")}, broadcast=True)
 
 @socketio.on("test")
 def test(data):
@@ -72,11 +72,10 @@ def get_player_score(data):
     if result: # all scores updated
         if any(value > 100 for value in scores.values()):
             print("GAME OVER")
-            emit("game_over", {"scores": scores}, broadcast=True)
+            emit("game_over", {"scores": scores, "nertz": data.get("nertz")}, broadcast=True)
         else: 
             print("reset")
-            emit("reset", {"scores": scores}, broadcast=True)
-            
+            emit("reset", {"scores": scores, "nertz": data.get("nertz")}, broadcast=True)
             game.reset()
     print(name, " ", score)
 

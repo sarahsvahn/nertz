@@ -35,8 +35,8 @@ class Hand():
         deck = Hand.generate_deck()
         self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
                               WorkingPile(deck[2]), WorkingPile(deck[3])]
-        self.nertz_pile = deck[4:17] #TODO uncomment this line
-        # self.nertz_pile = [Card("D", "1")] #TODO remove this line
+        # self.nertz_pile = deck[4:17] #TODO uncomment this line
+        self.nertz_pile = [Card("D", "1")] #TODO remove this line
         self.draw_pile = DrawPile(deck[17:])
         self.score = -26
     
@@ -56,7 +56,6 @@ class Hand():
         random.shuffle(deck) #TODO Add back in when ready
         return deck 
     
-
     def shuffle(self):
         ''' 
         Parameters: None
@@ -65,7 +64,6 @@ class Hand():
         Returns: None
         ''' 
         self.draw_pile.shuffle_cards()
-
 
     def draw(self): 
         ''' 
@@ -76,7 +74,6 @@ class Hand():
         ''' 
         return self.draw_pile.draw_three()
     
-
     def get_top3(self): 
         ''' 
         Parameters: None
@@ -86,7 +83,6 @@ class Hand():
         ''' 
         return self.draw_pile.get_top_three()
     
-
     def get_score(self): 
         ''' 
         Parameters: None
@@ -95,7 +91,6 @@ class Hand():
         Returns: Hand's score
         ''' 
         return self.score
-
 
     def top_nertz(self):
         ''' 
@@ -107,7 +102,6 @@ class Hand():
         if len(self.nertz_pile) == 0: 
             return Card("S", "0")
         return self.nertz_pile[-1]
-    
 
     def get_wp(self, idx): 
         ''' 
@@ -117,8 +111,7 @@ class Hand():
         Returns: Hand's working_pile at specified index
         ''' 
         return self.working_piles[idx]
-    
-    
+
     def find_og_location(self, card, pile):
         ''' 
         Parameters: card - original Card, pile - either string "WP" or "CP"
@@ -138,7 +131,6 @@ class Hand():
                     return list(Origin)[index]
         return Origin.NOT_FOUND
     
-    
     def validate_wp(self, pile):
         if pile[:-1] == "wp":
             if pile[-1].isnumeric():
@@ -146,7 +138,6 @@ class Hand():
                     return True
         return False
 
-    
     def move_to_wp(self, card_name, pile): 
         ''' 
         Parameters: card_name - string representing card, pile - string
@@ -197,7 +188,6 @@ class Hand():
             self.working_piles[origin.value].remove_top_card()
         self.score += 1 # a card was moved to CS
 
-
     def has_nertz(self):
         ''' 
         Parameters: None
@@ -206,7 +196,6 @@ class Hand():
         Returns: Whether nertz pile is empty
         ''' 
         return len(self.nertz_pile) == 0
-
 
     def count_nertz(self):
         ''' 

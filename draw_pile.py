@@ -37,6 +37,7 @@ class DrawPile():
         if len(self.faceDown) == 0:
             self.faceDown = self.faceUp
             self.faceUp = []
+            return []
         
         num_flipped = 0
         while len(self.faceDown) != 0 and num_flipped < 3: 
@@ -83,4 +84,4 @@ class DrawPile():
         self.faceDown = self.faceDown + self.faceUp
         self.faceUp = []
         random.shuffle(self.faceDown)
-        return self.draw_three()
+        return self.get_top_three()
