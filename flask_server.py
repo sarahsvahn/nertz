@@ -11,7 +11,8 @@ class Server():
         self.mutex = threading.Lock()
         self.players = []
         self.players_joined = 0
-        self.mutex = threading.Lock()
+        self.shuffle_count = set()
+        self.shuffle_mutex = threading.Lock()
 
         app = Flask(__name__) 
         app.config["SECRET_KEY"] = ""
@@ -37,6 +38,7 @@ class Server():
                 if len(self.players) == self.num_players:
                     print("about to emit start")
                     emit("start_game", broadcast=True)
+                    emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
 
         @self.socketio.on("player_rejoin")
         def rejoin_game(): 
@@ -70,7 +72,7 @@ class Server():
 
         @self.socketio.on("test")
         def test(data):
-            print("In tester: " + data.get("parameter"))
+            print("In tester: " + str(data.get("parameter")))
 
         @self.socketio.on("my_score")
         def get_player_score(data):
@@ -94,6 +96,14 @@ class Server():
             count = data.get("count")
             self.game.update_nertz_count(name, count)
             emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
+
+        @self.socketio.on("i_want_to_shuffle")
+        def someone_wants_to_shuffle(data):
+            print("SOMEONE WANTS TO shuffle")
+            with self.shuffle_mutex:
+                self.shuffle_count.add(data.get("name"))
+                if len(self.shuffle_count) == self.num_players:
+                    emit("allow_shuffle", broadcast=True)
 
 def main(): 
     n = int(input("Number of players: "))

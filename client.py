@@ -14,8 +14,9 @@ from card import Card
 import curses 
 from windows import Windows
 
-# TODO shuffle
 # TODO function contracts and file headers 
+# TODO asciii cards suit emojis
+# TODO community section starts
 
 class Client():
     def __init__(self, stdscr):
@@ -27,6 +28,7 @@ class Client():
         self.event = threading.Event()
         self.query = None
         self.thread = None
+        self.can_shuffle = False
 
         self.setup_handlers()
     
@@ -122,13 +124,12 @@ class Client():
             if Status[data.get("status")] == Status.SUCCESS:
                 remove_location = data.get("origin")
                 self.hand.remove_from_origin(Origin[remove_location])
+                self.can_shuffle = False
             else: 
                 self.windows.error_write("Move failed. RIPPPPP that sucks.")
                 self.windows.error_refresh()
 
             self.cp_move_done.set()
-
-            # self.thread = self.cp_move_done.set()
 
         @self.sio.on("reset")
         def reset(data): 
@@ -160,14 +161,20 @@ class Client():
             nertz_updated = data.get("nertz")
             self.windows.print_cs(board, nertz_updated)
 
+
+        @self.sio.on("allow_shuffle")
+        def allow_shuffle():
+            self.can_shuffle = True
+            self.windows.print_board(self.hand, self.hand.get_name(), self.can_shuffle)
+
         @self.sio.on("start_game")
         def query_loop(): 
             self.windows.error_write("Game started, make a move!")
             curses.echo()
 
-            self.windows.community_refresh()
+            # self.windows.community_refresh()
             self.windows.input_refresh()
-            self.windows.print_board(self.hand, self.hand.get_name())
+            self.windows.print_board(self.hand, self.hand.get_name(), self.can_shuffle)
 
             self.windows.input_write("> ")
             self.query = self.windows.input_read().lower()
@@ -198,14 +205,20 @@ class Client():
                                 result = self.hand.move_to_wp(self.query[1], self.query[2])
                                 if result == Status.INVALID_MOVE: 
                                     self.windows.error_write("Invalid move")
-                                elif result == Origin.NERTZ: 
-                                    self.sio.emit("update_nertz", {"name": self.hand.get_name(), "count": self.hand.count_nertz()})
+                                else: 
+                                    self.can_shuffle = False
+                                    if result == Origin.NERTZ: 
+                                        self.sio.emit("update_nertz", {"name": self.hand.get_name(), "count": self.hand.count_nertz()})
                             else: 
                                 self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
                     elif self.query == ['d']: 
                         self.hand.draw()
                     elif self.query == ['s']:
-                        self.hand.shuffle()
+                        if self.can_shuffle:
+                            self.hand.shuffle()
+                            self.can_shuffle = False
+                        else: 
+                            self.sio.emit("i_want_to_shuffle", {"name": self.hand.get_name()})
                         # TODO 
                     elif self.query == ['nertz']:
                         self.sio.emit("test", {"parameter": "You think you have nertz?"})
@@ -216,7 +229,7 @@ class Client():
                     else: 
                         self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
 
-                self.windows.print_board(self.hand, self.hand.get_name())
+                self.windows.print_board(self.hand, self.hand.get_name(), self.can_shuffle)
                 self.windows.input_write("> ")
                 self.query = None
                 self.thread = threading.Thread(target=self.input_thread, args=()).start()

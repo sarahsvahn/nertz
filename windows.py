@@ -16,6 +16,7 @@ class Windows():
         stdscr.bkgd(' ', curses.color_pair(3))
 
         self.last_move = ""
+        self.height = 0
         
         # colors 
         curses.can_change_color()
@@ -33,6 +34,7 @@ class Windows():
     
     def init_windows(self, stdscr):
         height, width = stdscr.getmaxyx()
+        self.height = height
         min_height = max(11 + 3 * MAX_PLAYERS, 19)
         min_width = 64 # 30 for each window + the borders
         if height < min_height or width < min_width: 
@@ -104,7 +106,7 @@ class Windows():
     def error_refresh(self): 
         self.clear_and_refresh(self.error_win)
 
-    def print_board(self, hand, name):
+    def print_board(self, hand, name, can_shuffle):
         self.hand_win.clear()
         self.hand_win.border()
 
@@ -117,8 +119,13 @@ class Windows():
         Windows.print_cards(9, 1, hand.get_wp(3).get_cards(), "wp4", self.hand_win)
         Windows.print_cards(11, 1, hand.get_top3(), "draw pile", self.hand_win)
 
+        if can_shuffle:
+            bottom = self.height - 8
+            self.hand_win.addstr(bottom, 1, f"Enter s to shuffle any time", curses.color_pair(5))
+
         with self.print_mutex:
             self.hand_win.refresh()         
+            self.input_win.refresh()
 
     @classmethod
     def print_cards(cls, y, x, cards, pile_name, window):
@@ -178,5 +185,4 @@ class Windows():
             self.community_win.addstr(i + 1, 1, f"{player}: {scores[player][0]} + {scores[player][1]} = {scores[player][0] + scores[player][1]}")
         self.community_win.addstr(len(scores) + 2, 1, f"{name} got nertz!", curses.color_pair(5))
         with self.print_mutex: 
-            self.community_win.refresh()
-        
+            self.community_win.refresh()        

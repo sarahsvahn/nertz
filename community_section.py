@@ -38,7 +38,7 @@ class CommunitySection():
         top_cards = []
         pile_names = []
 
-        nertz_str = "Nertz Counts\nx" # temp fix for indentation issue..
+        nertz_str = "Nertz Counts\n " # space added to be overwritten by border
         for player, count in nertz_count.items():
             nertz_str += str(player) + ": " + str(count) + ", "
         nertz_str = nertz_str[:-2]
