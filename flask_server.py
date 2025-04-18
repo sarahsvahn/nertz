@@ -4,6 +4,8 @@ from game import Game
 import threading
 from enums import Status
 
+# TODO refresh community section window when moving to next round
+
 class Server(): 
     def __init__(self, num_players):
         self.num_players = num_players
@@ -42,16 +44,15 @@ class Server():
 
         @self.socketio.on("player_rejoin")
         def rejoin_game(): 
-            global players_joined
             print("player has rejoined")
             with self.mutex:
-                players_joined += 1
-            print("count: ", players_joined)
+                self.players_joined += 1
+            print("count: ", self.players_joined)
             with self.mutex:
-                if players_joined == self.num_players:
+                if self.players_joined == self.num_players:
                     print("about to emit start again")
                     emit("start_game", broadcast=True)
-                    players_joined = 0
+                    self.players_joined = 0
 
         @self.socketio.on("cp_move")
         def cp_move(data):
@@ -104,6 +105,7 @@ class Server():
                 self.shuffle_count.add(data.get("name"))
                 if len(self.shuffle_count) == self.num_players:
                     emit("allow_shuffle", broadcast=True)
+                    self.shuffle_count = set()
 
 def main(): 
     n = int(input("Number of players: "))
