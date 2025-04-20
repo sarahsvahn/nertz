@@ -15,7 +15,6 @@ import curses
 from windows import Windows
 
 # TODO function contracts and file headers 
-# TODO asciii cards suit emojis
 # TODO community section starts
 
 class Client():
@@ -141,6 +140,7 @@ class Client():
 
             self.windows.input_refresh()
             self.windows.hand_refresh()
+            self.windows.community_refresh()
             self.windows.input_write("Enter any key to start the next round: ")
             self.event.wait()
             self.event.clear()

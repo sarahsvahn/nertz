@@ -53,6 +53,7 @@ class Server():
                     print("about to emit start again")
                     emit("start_game", broadcast=True)
                     self.players_joined = 0
+                    emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
 
         @self.socketio.on("cp_move")
         def cp_move(data):
