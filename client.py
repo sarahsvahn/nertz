@@ -127,7 +127,6 @@ class Client():
                 self.can_shuffle = False
             else: 
                 self.windows.error_write("Move failed. RIPPPPP that sucks.")
-                self.windows.error_refresh()
 
             self.cp_move_done.set()
 
