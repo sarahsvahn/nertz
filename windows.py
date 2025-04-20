@@ -193,7 +193,4 @@ class Windows():
             self.community_win.refresh()        
 
     def end(self): 
-        self.input_win.endwin()
-        self.hand_win.endwin()
-        self.community_win.endwin()
-        self.error_win.endwin()
+        curses.endwin()
