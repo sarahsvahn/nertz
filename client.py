@@ -149,7 +149,7 @@ class Client():
             self.sio.emit("player_rejoin", {"name": self.hand.get_name()})
             
         @self.sio.on("game_over")
-        def game_over(data): 
+        def game_over(data):
             self.query = None
             self.event.set()
             scores = data.get("scores")
