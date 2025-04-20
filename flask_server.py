@@ -4,11 +4,11 @@ from game import Game
 import threading
 from enums import Status
 
-# TODO refresh community section window when moving to next round
 
 class Server(): 
-    def __init__(self, num_players):
+    def __init__(self, num_players, score):
         self.num_players = num_players
+        self.winning_score = score
         self.game = Game(num_players)
         self.mutex = threading.Lock()
         self.players = []
@@ -35,7 +35,7 @@ class Server():
             name = data.get("name")
             with self.mutex:
                 self.players.append((request.sid, name))
-                self.game.update_nertz_count(name, 13)
+                self.game.update_nertz_count(name, 13) # TODO fix for shorter/longer nertz pile
                 emit("game_joined")
                 if len(self.players) == self.num_players:
                     print("about to emit start")
@@ -88,7 +88,7 @@ class Server():
             result = self.game.set_score(name, score)
             scores = self.game.get_scores()
             if result: # all scores updated
-                if any(sum(pair) >= 100 for pair in scores.values()):
+                if any(sum(pair) >= self.winning_score for pair in scores.values()):
                     print("GAME OVER")
                     emit("game_over", {"scores": scores, "nertz": data.get("nertz")}, broadcast=True)
                 else: 
@@ -115,7 +115,8 @@ class Server():
 
 def main(): 
     n = int(input("Number of players: "))
-    Server(n)
+    score = int(input("Winning score"))
+    Server(n, score)
 
 if __name__ == '__main__':
     main()

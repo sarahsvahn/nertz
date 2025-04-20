@@ -17,7 +17,7 @@ class CommunitySection():
         with self.count_mutex:
             idx = self.piles_count
             self.piles_count += 1
-            self.piles[idx] = CommunityPile(card) # TODO update design doc to reflect this
+            self.piles[idx] = CommunityPile(card) 
 
     def add_to_pile(self, card, pile_name="new_pile"):
         if card.get_value() == 1:
@@ -28,10 +28,7 @@ class CommunitySection():
                 pile_idx = int(pile_name[2:]) - 1
             else:
                 return Status.INVALID_MOVE
-            # if self.piles[pile_idx].get_top_card().next_cp(card): #TODO keep for higher concurrency?
             return self.piles[pile_idx].add_to_pile(card)
-            # else:
-            #     return Status.INVALID_MOVE
 
     def get_board(self, name, card, nertz_count, pile): 
         to_return = [[f"COMMUNITY SECTION"], [f"{name} added {card} to {pile}\n"]]

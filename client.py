@@ -126,7 +126,7 @@ class Client():
                 self.hand.remove_from_origin(Origin[remove_location])
                 self.can_shuffle = False
             else: 
-                self.windows.error_write("Move failed. RIPPPPP that sucks.")
+                self.windows.error_write("Another user beat you to it. RIPPPPP that sucks.")
 
             self.cp_move_done.set()
 
@@ -158,6 +158,7 @@ class Client():
             
             self.windows.input_write("Enter any key to leave the game: ")
             self.event.wait()
+            # self.query = None #?
             self.windows.end()
             sys.exit(0)
 
