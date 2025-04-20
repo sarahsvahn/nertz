@@ -67,14 +67,14 @@ class Client():
         self.sio.emit("player_join", {"name": name})
         self.sio.wait()
     
-    def print_scores(self, scores, name):
+    def print_scores(self, scores, name, winner=None):
         ''' 
         Parameters: scores
         Purpose: Prints all player's scores to window
         Effects: Prints to the community window
         Returns: None
         ''' 
-        self.windows.print_scores(scores, name)
+        self.windows.print_scores(scores, name, winner)
 
     def input_thread(self): 
         ''' 

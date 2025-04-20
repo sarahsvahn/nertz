@@ -181,7 +181,7 @@ class Windows():
             self.community_win.refresh()
             self.input_win.refresh()
     
-    def print_scores(self, scores, name, winner=None):
+    def print_scores(self, scores, name, winner = None):
         self.community_win.clear()
         self.community_win.border()
         for i, player in enumerate(scores):
