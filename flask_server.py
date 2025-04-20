@@ -40,21 +40,26 @@ class Server():
                 if len(self.players) == self.num_players:
                     print("about to emit start")
                     emit("start_game", broadcast=True)
-                    emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
+                    # emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
 
         @self.socketio.on("player_rejoin")
-        def rejoin_game(): 
+        def rejoin_game(data): 
             print("player has rejoined")
             with self.mutex:
                 self.players_joined += 1
+            self.game.update_nertz_count(data.get("name"), 13)
             print("count: ", self.players_joined)
             with self.mutex:
                 if self.players_joined == self.num_players:
                     print("about to emit start again")
                     emit("start_game", broadcast=True)
+                    # emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
                     self.players_joined = 0
-                    emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
 
+        @self.socketio.on("update_my_cs")        
+        def update():
+            emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
+        
         @self.socketio.on("cp_move")
         def cp_move(data):
             print(data)

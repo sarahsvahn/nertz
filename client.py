@@ -140,12 +140,12 @@ class Client():
 
             self.windows.input_refresh()
             self.windows.hand_refresh()
-            self.windows.community_refresh()
+            # self.windows.community_refresh()
             self.windows.input_write("Enter any key to start the next round: ")
             self.event.wait()
             self.event.clear()
             self.sio.emit("test", {"parameter": "entered key"})
-            self.sio.emit("player_rejoin")
+            self.sio.emit("player_rejoin", {"name": self.hand.get_name()})
             
         @self.sio.on("game_over")
         def game_over(data): 
@@ -161,7 +161,6 @@ class Client():
             nertz_updated = data.get("nertz")
             self.windows.print_cs(board, nertz_updated)
 
-
         @self.sio.on("allow_shuffle")
         def allow_shuffle():
             self.can_shuffle = True
@@ -172,7 +171,10 @@ class Client():
             self.windows.error_write("Game started, make a move!")
             curses.echo()
 
-            # self.windows.community_refresh()
+            self.windows.community_refresh()
+            
+            self.sio.emit("update_my_cs")
+            
             self.windows.input_refresh()
             self.windows.print_board(self.hand, self.hand.get_name(), self.can_shuffle)
 
