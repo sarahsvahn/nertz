@@ -174,6 +174,7 @@ class Client():
             self.windows.community_refresh()
             
             self.sio.emit("update_my_cs")
+            self.sio.wait()
             
             self.windows.input_refresh()
             self.windows.print_board(self.hand, self.hand.get_name(), self.can_shuffle)
