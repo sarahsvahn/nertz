@@ -150,7 +150,7 @@ class Client():
         @self.sio.on("game_over")
         def game_over(data): 
             scores = data.get("scores")
-            Client.print_scores(scores, data.get("nertz"))
+            self.print_scores(scores, data.get("nertz"))
             winner = min(scores, key=scores.get)
             self.windows.community_write(f"{winner} is the winner!", len(scores) + 1, 1)
             self.windows.community_refresh()
