@@ -7,6 +7,7 @@
 # 
 
 from hand import Hand
+import sys
 import threading
 import socketio
 from enums import Status, Origin
@@ -158,7 +159,7 @@ class Client():
             
             self.windows.input_write("Enter any key to leave the game: ")
             self.event.wait()
-            exit()
+            sys.exit()
 
         @self.sio.on("cs_updated")
         def update_cs(data):
