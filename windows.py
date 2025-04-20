@@ -81,6 +81,9 @@ class Windows():
     def error_write(self, str, y = 1, x = 1):
         self.write(self.error_win, str, y, x)
 
+    def community_write(self, str, y = 1, x = 1):
+        self.write(self.community_win, str, y, x)
+
     @classmethod
     def read(cls, window):
         return window.getstr().decode("utf-8")
