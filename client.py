@@ -153,7 +153,6 @@ class Client():
             self.print_scores(scores, data.get("nertz"))
             winner = min(scores, key=scores.get)
             self.windows.community_write(f"{winner} is the winner!", len(scores) + 1, 1)
-            self.windows.community_refresh()
 
         @self.sio.on("cs_updated")
         def update_cs(data):
