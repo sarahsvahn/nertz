@@ -151,15 +151,15 @@ class Client():
         @self.sio.on("game_over")
         def game_over(data): 
             self.event.set()
-            self.query = None
             scores = data.get("scores")
             winner = max(scores, key=scores.get)
+            self.query = None
             # self.windows.community_write(f"{winner} is the winner!", len(scores) + 1, 1)
             self.print_scores(scores, data.get("nertz"), winner)
             
             self.windows.input_write("Enter any key to leave the game: ")
             self.event.wait()
-            sys.exit()
+            sys.exit(0)
 
         @self.sio.on("cs_updated")
         def update_cs(data):
