@@ -38,7 +38,7 @@ class Hand():
         self.nertz_pile = deck[4:17] #TODO uncomment this line
         # self.nertz_pile = [Card("D", "1")] #TODO remove this line
         self.draw_pile = DrawPile(deck[17:])
-        self.score = -26
+        self.score = 90 #-26
     
     @staticmethod
     def generate_deck():
