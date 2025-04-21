@@ -35,11 +35,11 @@ class Hand():
         deck = Hand.generate_deck()
         self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
                               WorkingPile(deck[2]), WorkingPile(deck[3])]
-        self.nertz_pile = deck[4:17] #TODO uncomment this line
-        # self.nertz_pile = deck[4:7]
+        # self.nertz_pile = deck[4:17] #TODO uncomment this line
+        self.nertz_pile = deck[4:7]
         # self.nertz_pile = [Card("D", "2"), Card("D", "1")] #TODO remove this line
-        self.draw_pile = DrawPile(deck[17:])
-        # self.draw_pile = DrawPile(deck[7:])
+        # self.draw_pile = DrawPile(deck[17:])
+        self.draw_pile = DrawPile(deck[7:])
         # self.score = 100 #-26
         self.score = -(len(self.nertz_pile) * 2)
     

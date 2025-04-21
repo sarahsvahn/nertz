@@ -4,6 +4,7 @@ from game import Game
 import threading
 from enums import Status
 
+NERTZ_LEN = 3
 
 class Server(): 
     def __init__(self, num_players, score):
@@ -35,7 +36,8 @@ class Server():
             name = data.get("name")
             with self.mutex:
                 self.players.append((request.sid, name))
-                self.game.update_nertz_count(name, 13) # TODO fix for shorter/longer nertz pile
+                # self.game.update_nertz_count(name, 13) # TODO fix for shorter/longer nertz pile
+                self.game.update_nertz_count(name, NERTZ_LEN)
                 emit("game_joined")
                 if len(self.players) == self.num_players:
                     print("about to emit start")
@@ -115,7 +117,7 @@ class Server():
 
 def main(): 
     n = int(input("Number of players: "))
-    score = int(input("Winning score"))
+    score = int(input("Winning score: "))
     Server(n, score)
 
 if __name__ == '__main__':
