@@ -142,10 +142,10 @@ class Windows():
             if card.get_value() != 0:
                 if i == len(cards) - 1:
                     window.addstr(y, x + running_len, f"{card}", curses.color_pair(card.get_color().value + 1))
-                    running_len += len(card.stringify())
+                    running_len += len(card.__repr__())
                 else:
                     window.addstr(y, x + running_len, f"{card}, ", curses.color_pair(card.get_color().value + 1))
-                    running_len += len(card.stringify()) + 2
+                    running_len += len(card.__repr__()) + 2
         if pile_name == "draw pile":
             window.addstr(y + 1, x + len(pile_name + ":  ["), f"^")
         window.addstr(y, x + running_len, "]")

@@ -60,7 +60,9 @@ class Server():
 
         @self.socketio.on("update_my_cs")        
         def update():
-            emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
+            board = self.game.get_board()
+            board[1][0] = ""
+            emit("cs_updated", {"board": board, "nertz": False}, broadcast=True)
         
         @self.socketio.on("cp_move")
         def cp_move(data):

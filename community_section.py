@@ -1,6 +1,7 @@
 import threading
 from enums import Status
 from community_pile import CommunityPile
+from card import Card
 
 class CommunitySection():
     def __init__(self, num_players):
@@ -13,12 +14,6 @@ class CommunitySection():
         self.piles = [0] * (4 * self.num_players)
         self.piles_count = 0
 
-    def start_new_pile(self, card):
-        with self.count_mutex:
-            idx = self.piles_count
-            self.piles_count += 1
-            self.piles[idx] = CommunityPile(card) 
-
     def add_to_pile(self, card, pile_name="new_pile"):
         if card.get_value() == 1:
             self.start_new_pile(card)
@@ -30,7 +25,15 @@ class CommunitySection():
                 return Status.INVALID_MOVE
             return self.piles[pile_idx].add_to_pile(card)
 
+    def start_new_pile(self, card):
+        with self.count_mutex:
+            idx = self.piles_count
+            self.piles_count += 1
+            self.piles[idx] = CommunityPile(card) 
+
     def get_board(self, name, card, nertz_count, pile): 
+        if card != "":
+            card = Card.card_with_name(card).__repr__()
         to_return = [[f"COMMUNITY SECTION"], [f"{name} added {card} to {pile}\n"]]
         top_cards = []
         pile_names = []

@@ -36,6 +36,12 @@ class Card():
         return self.value == card.get_value() - 1 and self.suit == card.get_suit()
     
     def __repr__(self):
+        val = str(self.value).replace("11", "J")
+        val = val.replace("12", "Q")
+        val = val.replace("13", "K")
+        if int(self.value) == 1:
+            val = "A"
+
         if self.suit == Suit.H:
             symb = "\u2764"
         elif self.suit == Suit.D:
@@ -44,4 +50,4 @@ class Card():
             symb = "\u2660"
         else: # C
             symb = "\u2663"
-        return f"{self.value}{symb}"
+        return f"{val}{symb}"

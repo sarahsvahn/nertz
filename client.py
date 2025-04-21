@@ -87,6 +87,10 @@ class Client():
         Note: Used as the threading function for thread
         ''' 
         self.query = self.windows.input_read().lower()
+        self.query = self.query.replace("a", "1")
+        self.query = self.query.replace("j", "11")
+        self.query = self.query.replace("q", "12")
+        self.query = self.query.replace("k", "13")
         self.event.set()
         self.thread = None
 
@@ -187,6 +191,10 @@ class Client():
 
             self.windows.input_write("> ")
             self.query = self.windows.input_read().lower()
+            self.query = self.query.replace("a", "1")
+            self.query = self.query.replace("j", "11")
+            self.query = self.query.replace("q", "12")
+            self.query = self.query.replace("k", "13")
             
             while self.query != None: 
                 self.sio.emit("test", {"parameter": "Starting loop"})
