@@ -1,3 +1,11 @@
+# windows.py
+# Authors: Cliodhna Reidy, Sarah Svahn, Owen Thomas
+# 
+# This file contains the Windows class which represents the different windows
+# in the user’s terminal. It deals with printing to and receiving input
+# from different windows. 
+# 
+
 import threading
 import curses 
 from card import Card
@@ -161,7 +169,7 @@ class Windows():
         for i in range(len(real_cards)):
             window.addstr(y, x + running_len, f"[ {real_cards[i]} ]", curses.color_pair(real_cards[i].get_color().value + 1))
             window.addstr(y + 1, x + running_len + 2, f"{pile_names[i]}")
-            running_len += len(real_cards[i].stringify()) + 4
+            running_len += len(real_cards[i].__repr__()) + 4
 
     def print_cs(self, board, nertz_changed):
         self.community_win.clear()

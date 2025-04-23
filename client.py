@@ -14,6 +14,7 @@ from enums import Status, Origin
 from card import Card
 import curses 
 from windows import Windows
+import time
 
 # TODO function contracts and file headers 
 # TODO community section starts
@@ -22,13 +23,15 @@ class Client():
     def __init__(self, stdscr):
         self.sio = socketio.Client()
         self.cp_move_done = threading.Event()
-        self.server_url = "http://localhost:5000"
+        self.server_url = "http://localhost:5000" 
+        # swap with whatever ip the server is running on to work on multiple VMs
         self.hand = Hand()
         self.windows = Windows(stdscr)
         self.event = threading.Event()
         self.query = None
         self.thread = None
         self.can_shuffle = False
+        self.game_over = False
 
         self.setup_handlers()
     
@@ -153,18 +156,23 @@ class Client():
             
         @self.sio.on("game_over")
         def game_over(data):
-            self.query = None
-            self.event.set()
+            self.game_over = True
             scores = data.get("scores")
             winner = max(scores, key=scores.get)
-            # self.windows.community_write(f"{winner} is the winner!", len(scores) + 1, 1)
             self.print_scores(scores, data.get("nertz"), winner)
             
             self.windows.input_write("Enter any key to leave the game: ")
             self.event.wait()
-            # self.query = None #?
+            # self.event.clear()
+
+            self.sio.emit("test", {"parameter": self.query})
+
+            self.thread = None
+            self.query = None
+
             self.windows.end()
-            sys.exit(0)
+            self.sio.emit("disconnect")
+            self.sio.disconnect()
 
         @self.sio.on("cs_updated")
         def update_cs(data):
@@ -196,10 +204,12 @@ class Client():
             self.query = self.query.replace("q", "12")
             self.query = self.query.replace("k", "13")
             
-            while self.query != None: 
+            while self.query != None and not self.game_over: 
+                self.event.clear()
                 self.sio.emit("test", {"parameter": "Starting loop"})
                 self.sio.emit("test", {"parameter": f"Query: {self.query}"})
                 self.windows.error_refresh()
+
                 if len(self.query) == 0: 
                     self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
                 else: 
@@ -251,9 +261,7 @@ class Client():
                 self.query = None
                 self.thread = threading.Thread(target=self.input_thread, args=()).start()
                 self.event.wait()
-                self.event.clear()
-
-            self.sio.emit("test", {"parameter": "After loop"})
+                time.sleep(0.1)
 
     def connect(self):
         self.sio.connect(self.server_url)
@@ -265,5 +273,5 @@ def main(stdscr):
 
 curses.wrapper(main)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
