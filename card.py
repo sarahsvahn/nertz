@@ -1,7 +1,7 @@
 # card.py
 # Authors: Cliodhna Reidy, Sarah Svahn, Owen Thomas
 # 
-# This file contains the card class which represents a playing card, which has a
+# This file contains the Card class which represents a playing card, which has a
 # suit, value, and color. Two cards are equal if they have the same value and 
 # suit
 
