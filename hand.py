@@ -4,7 +4,7 @@
 # This file contains the hand class which represents an individual user's 
 # playing cards. The cards are divided into four working piles, a 
 # nertz pile, and a draw pile. Each player has a score which is updated
-# as appropriate as cards as discarded/moved.
+# as appropriate as cards are discarded/moved.
 # 
 
 from working_pile import WorkingPile
@@ -33,13 +33,20 @@ class Hand():
         Returns: None
         ''' 
         deck = Hand.generate_deck()
-        self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
+        deck.remove(Card("S", 6))
+        deck.remove(Card("D", 1))
+        deck.remove(Card("C", 4))
+        deck.remove(Card("S", 1))
+        deck.remove(Card("H", 5))
+        
+        self.working_piles = [WorkingPile(Card("S", 6)), WorkingPile(deck[1]),
                               WorkingPile(deck[2]), WorkingPile(deck[3])]
         # self.nertz_pile = deck[4:17] #TODO uncomment this line
-        self.nertz_pile = deck[4:7]
-        # self.nertz_pile = [Card("D", "2"), Card("D", "1")] #TODO remove this line
+        # self.nertz_pile = deck[4:7]
+        self.nertz_pile = [Card("D", 1), Card("C", 4), Card("S", 1)] #TODO remove this line
         # self.draw_pile = DrawPile(deck[17:])
-        self.draw_pile = DrawPile(deck[7:])
+        deck.insert(len(deck) - 2, Card("H", 5))
+        self.draw_pile = DrawPile(deck[3:])
         # self.score = 100 #-26
         self.score = -(len(self.nertz_pile) * 2)
     

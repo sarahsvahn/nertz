@@ -1,3 +1,6 @@
+# Update running server so that player count and total score are command line 
+# args instead of prompts. Allow total score to default to 100 if not provided
+
 from flask import Flask, request
 from flask_socketio import SocketIO, emit
 from game import Game
@@ -26,9 +29,18 @@ class Server():
         self.socketio.run(app, host='0.0.0.0', port=5000)
     
     def setup_handlers(self):   
-        @self.socketio.on('connect')
+        @self.socketio.on("connect")
         def handle_connect():
             print("A client connected!")
+
+        @self.socketio.on("disconnect")
+        def handle_disconnect():
+            with self.mutex:
+                self.num_players -= 1
+            print("A player has disconnected")
+            # with self.mutex:
+            #     if self.num_players == 0:
+            #         self.socketio.disconnect()
             
         @self.socketio.on("player_join")
         def join_game(data):
