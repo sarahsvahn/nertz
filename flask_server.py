@@ -38,9 +38,6 @@ class Server():
             with self.mutex:
                 self.num_players -= 1
             print("A player has disconnected")
-            # with self.mutex:
-            #     if self.num_players == 0:
-            #         self.socketio.disconnect()
             
         @self.socketio.on("player_join")
         def join_game(data):
