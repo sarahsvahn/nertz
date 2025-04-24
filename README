@@ -1,4 +1,5 @@
-pip install flask flask-socketio
+pip install flask flask-socketio 
+pip install request (i think)
 
 https://python-socketio.readthedocs.io/en/latest/api.html
 https://stackoverflow.com/questions/77360099/emitting-event-from-client-to-server-using-python-socketio-is-extremely-slow
