@@ -156,19 +156,20 @@ class Client():
             
         @self.sio.on("game_over")
         def game_over(data):
+            self.event.set()
             self.game_over = True
+
             scores = data.get("scores")
             winner = max(scores, key=scores.get)
             self.print_scores(scores, data.get("nertz"), winner)
             
-            self.windows.input_write("Enter any key to leave the game: ")
+            self.windows.input_write("Game over!")
             self.event.wait()
-            # self.event.clear()
-
-            self.sio.emit("test", {"parameter": self.query})
 
             self.thread = None
             self.query = None
+
+            time.sleep(10)
 
             self.windows.end()
             self.sio.emit("disconnect")
@@ -204,65 +205,67 @@ class Client():
             self.query = self.query.replace("q", "12")
             self.query = self.query.replace("k", "13")
             
-            while self.query != None and not self.game_over: 
-                self.event.clear()
+            while self.query != None: 
+                
                 self.sio.emit("test", {"parameter": "Starting loop"})
                 self.sio.emit("test", {"parameter": f"Query: {self.query}"})
                 self.windows.error_refresh()
-
-                if len(self.query) == 0: 
-                    self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
-                else: 
-                    self.query = self.query.split()
-                    if self.query[0] == 'm' and len(self.query) == 3:
-                        if Client.validate_card(self.query[1]) == Status.INVALID_CARD:
-                            self.windows.error_write("Invalid card")
-                        else:
-                            if "cp" in self.query[2]:
-                                origin = self.hand.find_og_location(Card.card_with_name(self.query[1]), "CP")
-                                if origin != Origin.NOT_FOUND:
-                                    self.cp_move_done.clear()
-                                    self.sio.emit("cp_move", {'card': self.query[1], 'pile': self.query[2], "name": self.hand.get_name(), "origin": origin.name})
-                                    self.cp_move_done.wait()
-                                    if origin == Origin.NERTZ: 
-                                        self.sio.emit("update_nertz", {"name": self.hand.get_name(), "count": self.hand.count_nertz()})
-                                else:
-                                    self.windows.error_write("Invalid move")
-                            elif "wp" in self.query[2]: 
-                                result = self.hand.move_to_wp(self.query[1], self.query[2])
-                                if result == Status.INVALID_MOVE: 
-                                    self.windows.error_write("Invalid move")
-                                else: 
-                                    self.can_shuffle = False
-                                    if result == Origin.NERTZ: 
-                                        self.sio.emit("update_nertz", {"name": self.hand.get_name(), "count": self.hand.count_nertz()})
-                            else: 
-                                self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
-                    elif self.query == ['d']: 
-                        self.hand.draw()
-                    elif self.query == ['s']:
-                        if self.can_shuffle:
-                            self.hand.shuffle()
-                            self.can_shuffle = False
-                        else: 
-                            self.sio.emit("i_want_to_shuffle", {"name": self.hand.get_name()})
-                        # TODO 
-                    elif self.query == ['nertz']:
-                        self.sio.emit("test", {"parameter": "You think you have nertz?"})
-                        if self.hand.has_nertz():
-                            self.sio.emit("has_nertz", {"nertz": self.hand.get_name()})
-                        else: 
-                            self.windows.error_write("Your nertz pile is not empty. Keep playing.")
-                    else: 
+                
+                if not self.game_over:
+                    self.event.clear()
+                    if len(self.query) == 0: 
                         self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
+                    else: 
+                        self.query = self.query.split()
+                        if self.query[0] == 'm' and len(self.query) == 3:
+                            if Client.validate_card(self.query[1]) == Status.INVALID_CARD:
+                                self.windows.error_write("Invalid card")
+                            else:
+                                if "cp" in self.query[2]:
+                                    origin = self.hand.find_og_location(Card.card_with_name(self.query[1]), "CP")
+                                    if origin != Origin.NOT_FOUND:
+                                        self.cp_move_done.clear()
+                                        self.sio.emit("cp_move", {'card': self.query[1], 'pile': self.query[2], "name": self.hand.get_name(), "origin": origin.name})
+                                        self.cp_move_done.wait()
+                                        if origin == Origin.NERTZ: 
+                                            self.sio.emit("update_nertz", {"name": self.hand.get_name(), "count": self.hand.count_nertz()})
+                                    else:
+                                        self.windows.error_write("Invalid move")
+                                elif "wp" in self.query[2]: 
+                                    result = self.hand.move_to_wp(self.query[1], self.query[2])
+                                    if result == Status.INVALID_MOVE: 
+                                        self.windows.error_write("Invalid move")
+                                    else: 
+                                        self.can_shuffle = False
+                                        if result == Origin.NERTZ: 
+                                            self.sio.emit("update_nertz", {"name": self.hand.get_name(), "count": self.hand.count_nertz()})
+                                else: 
+                                    self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
+                        elif self.query == ['d']: 
+                            self.hand.draw()
+                        elif self.query == ['s']:
+                            if self.can_shuffle:
+                                self.hand.shuffle()
+                                self.can_shuffle = False
+                            else: 
+                                self.sio.emit("i_want_to_shuffle", {"name": self.hand.get_name()})
+                            # TODO 
+                        elif self.query == ['nertz']:
+                            self.sio.emit("test", {"parameter": "You think you have nertz?"})
+                            if self.hand.has_nertz():
+                                self.sio.emit("has_nertz", {"nertz": self.hand.get_name()})
+                            else: 
+                                self.windows.error_write("Your nertz pile is not empty. Keep playing.")
+                        else: 
+                            self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
 
                 self.windows.print_board(self.hand, self.hand.get_name(), self.can_shuffle)
                 self.windows.input_write("> ")
                 self.query = None
+
                 self.thread = threading.Thread(target=self.input_thread, args=()).start()
                 self.event.wait()
-                time.sleep(0.1)
-
+            
     def connect(self):
         self.sio.connect(self.server_url)
 
