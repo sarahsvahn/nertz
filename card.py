@@ -9,7 +9,6 @@ from enums import Color, Suit
 
 class Card(): 
     def __init__(self, suit, value:int): 
-        # TODO handle invalid suit/values
         self.suit = Suit[suit]
         self.value = value
         if self.suit == Suit.D or self.suit == Suit.H:
