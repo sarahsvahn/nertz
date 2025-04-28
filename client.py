@@ -269,7 +269,6 @@ class Client():
             while self.query != None: 
                 self.windows.error_refresh()
                 if not self.game_over:
-                    self.event.clear()
                     self.handle_input()
                     
                 self.windows.print_board(self.hand, self.hand.get_name(),
@@ -279,6 +278,8 @@ class Client():
                 self.thread = threading.Thread(target=self.input_thread,
                                                args=()).start()
                 self.event.wait()
+                self.event.clear()
+
             
     def handle_input(self):
         ''' 
