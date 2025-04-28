@@ -50,7 +50,7 @@ class Client():
         if card_name[:-1].isnumeric():
             if int(card_name[:-1]) > 13 or int(card_name[:-1]) <= 0:
                 return Status.INVALID_CARD
-        if card_name[:-1] not in ["a", "j", "q", "k"]:
+        else: 
             return Status.INVALID_CARD
         return Status.SUCCESS     
 
