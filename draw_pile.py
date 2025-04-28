@@ -71,7 +71,7 @@ class DrawPile():
         if len(self.faceUp) == 0:
             return Status.EMPTY
         card = self.faceUp.pop(0)
-        return (card) # TODO, used to be a tuple 
+        return card
 
     def shuffle_cards(self): 
         ''' 

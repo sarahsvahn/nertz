@@ -1,3 +1,10 @@
+# enums.py
+# Authors: Cliodhna Reidy, Sarah Svahn, Owen Thomas
+# 
+# This file contains enums that are shared across files, including for 
+# status messages or the location of cards.
+# 
+
 from enum import Enum
 
 class Color(Enum):
