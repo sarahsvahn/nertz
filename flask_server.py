@@ -83,13 +83,11 @@ class Server():
             name = data.get("name")
             with self.mutex:
                 self.players.append((request.sid, name))
-                # self.game.update_nertz_count(name, 13) # TODO fix for shorter/longer nertz pile
                 self.game.update_nertz_count(name, NERTZ_LEN)
                 emit("game_joined")
                 if len(self.players) == self.num_players:
                     print("about to emit start")
                     emit("start_game", broadcast=True)
-                    # emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
 
         @self.socketio.on("player_rejoin")
         def rejoin_game(data): 
@@ -192,7 +190,8 @@ class Server():
             result = self.game.set_score(name, score)
             scores = self.game.get_scores()
             if result: # all scores updated
-                if any(sum(pair) >= self.winning_score for pair in scores.values()):
+                if (any(sum(pair) >= 
+                    self.winning_score for pair in scores.values())):
                     print("game over")
                     emit(
                         "game_over",
@@ -225,7 +224,9 @@ class Server():
             name = data.get("name")
             count = data.get("count")
             self.game.update_nertz_count(name, count)
-            emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
+            emit("cs_updated", 
+                 {"board": self.game.get_board(), "nertz": True}, 
+                 broadcast=True)
 
         @self.socketio.on("i_want_to_shuffle")
         def someone_wants_to_shuffle(data):

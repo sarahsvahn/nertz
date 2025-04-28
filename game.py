@@ -13,7 +13,8 @@ class Game():
     def __init__(self, num_players):
         self.num_players = num_players
         self.players = []
-        self.scores = {} # dictionary of names to lists of size 2 [previous score, new score]
+        self.scores = {} # dictionary of names to lists of size 2 
+                         # [previous score, new score]
         self.community_section = CommunitySection(self.num_players)
         self.scores_count = 0
         self.mutex = threading.Lock()
@@ -39,7 +40,8 @@ class Game():
         Effects: None
         Returns: The string of the current board
         '''
-        return self.community_section.get_board(name, card, self.nertz_counts, pile)
+        return self.community_section.get_board(name, card, self.nertz_counts, 
+                                                pile)
     
     def set_score(self, name, score):
         ''' 
