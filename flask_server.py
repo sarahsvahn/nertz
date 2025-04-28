@@ -17,6 +17,12 @@ NERTZ_LEN = 13
 
 class Server(): 
     def __init__(self, num_players, score):
+        ''' 
+        Parameters: num_players (int), score (int)
+        Purpose: Initializes a new flask Server object 
+        Effects: Runs a SocketIO app on the defined host and port 
+        Returns: Instance of Server 
+        ''' 
         self.num_players = num_players
         self.winning_score = score
         self.game = Game(num_players)
@@ -35,18 +41,44 @@ class Server():
         self.socketio.run(app, host='0.0.0.0', port=8000)
     
     def setup_handlers(self):   
+        ''' 
+        Parameters: None
+        Purpose: Sets up all handler functions that communicate with client
+        Effects: None
+        Returns: None
+        Note: All of these functions are called by the client via socketio
+        ''' 
         @self.socketio.on("connect")
         def handle_connect():
+            ''' 
+            Parameters: None
+            Purpose: Tells the server when a client has connected 
+            Effects: Prints an alert 
+            Returns: None
+            ''' 
             print("A client connected!")
 
         @self.socketio.on("disconnect")
         def handle_disconnect():
+            ''' 
+            Parameters: None
+            Purpose: Tells the server when a client has disconnected 
+            Effects: Prints an alert 
+            Returns: None
+            ''' 
             with self.mutex:
                 self.num_players -= 1
             print("A player has disconnected")
             
         @self.socketio.on("player_join")
         def join_game(data):
+            ''' 
+            Parameters: data from client's message
+            Purpose: Joins a player
+            Effects: Prints the player's name, emits game_joined and start_game
+                to client
+            Returns: None
+            ''' 
             print(data)
             name = data.get("name")
             with self.mutex:
@@ -61,6 +93,13 @@ class Server():
 
         @self.socketio.on("player_rejoin")
         def rejoin_game(data): 
+            ''' 
+            Parameters: data from client's message
+            Purpose: Tells the server when a client has joined for next round 
+            Effects: Prints an alert, prints the count of players that have 
+                rejoined, emits start_game
+            Returns: None
+            ''' 
             print("player has rejoined")
             with self.mutex:
                 self.players_joined += 1
@@ -70,54 +109,119 @@ class Server():
                 if self.players_joined == self.num_players:
                     print("about to emit start again")
                     emit("start_game", broadcast=True)
-                    # emit("cs_updated", {"board": self.game.get_board(), "nertz": True}, broadcast=True)
                     self.players_joined = 0
 
         @self.socketio.on("update_my_cs")        
         def update():
+            ''' 
+            Parameters: None
+            Purpose: Sends the client an updated board 
+            Effects: Emits cs_updated
+            Returns: None
+            ''' 
             board = self.game.get_board()
             board[1][0] = ""
             emit("cs_updated", {"board": board, "nertz": False}, broadcast=True)
         
         @self.socketio.on("cp_move")
         def cp_move(data):
+            ''' 
+            Parameters: data from client's message 
+            Purpose: Executes a move into the community section
+            Effects: Prints the requested move, emits cp_move_result and if the
+                move was successful, cs_updated
+            Returns: None
+            ''' 
             print(data)
             card = data.get("card")
             pile = data.get("pile")
             name = data.get("name")
             result = self.game.cp_move(card, pile)
-            emit("cp_move_result", {"status": result.name, "card": card, "origin": data.get("origin")})
+            emit(
+                "cp_move_result", 
+                {
+                    "status": result.name, 
+                    "card": card, 
+                    "origin": data.get("origin")
+                }
+            )
             if result == Status.SUCCESS: 
                 print(self.game.get_board(name, card, pile))
-                emit("cs_updated", {"board": self.game.get_board(name, card, pile), "nertz": False}, broadcast=True)
+                emit(
+                    "cs_updated", 
+                    {
+                        "board": self.game.get_board(name, card, pile), 
+                         "nertz": False
+                    }, 
+                    broadcast=True
+                )
 
         @self.socketio.on("has_nertz")
         def game_over(data): 
+            ''' 
+            Parameters: None
+            Purpose: Tells the server the game is over 
+            Effects: Emits get_scores to ask for clients' scores
+            Returns: None
+            ''' 
             print("self. NERTZ")
             emit("get_scores", {"nertz": data.get("nertz")}, broadcast=True)
 
         @self.socketio.on("test")
         def test(data):
+            ''' 
+            Parameters: data from client's message
+            Purpose: Debugging function to print from client
+            Effects: Prints the debug message 
+            Returns: None
+            ''' 
             print("In tester: " + str(data.get("parameter")))
 
         @self.socketio.on("my_score")
         def get_player_score(data):
+            ''' 
+            Parameters: data from client's message 
+            Purpose: Receives a players score, if it has all players scores it 
+                checks for a winner and ends the game or starts the next round
+            Effects: Prints an alert and emits game over or reset, prints the 
+                player's name and their score that was received 
+            Returns: None
+            ''' 
             name = data.get("name")
             score = data.get("score")
             result = self.game.set_score(name, score)
             scores = self.game.get_scores()
             if result: # all scores updated
                 if any(sum(pair) >= self.winning_score for pair in scores.values()):
-                    print("GAME OVER")
-                    emit("game_over", {"scores": scores, "nertz": data.get("nertz")}, broadcast=True)
+                    print("game over")
+                    emit(
+                        "game_over",
+                        {
+                            "scores": scores,
+                            "nertz": data.get("nertz")
+                        },
+                        broadcast=True
+                    )
                 else: 
                     print("reset")
-                    emit("reset", {"scores": scores, "nertz": data.get("nertz")}, broadcast=True)
+                    emit(
+                        "reset", 
+                        {
+                            "scores": scores, 
+                            "nertz": data.get("nertz")
+                        }, 
+                        broadcast=True)
                     self.game.reset()
             print(name, " ", score)
 
         @self.socketio.on("update_nertz")
         def update_nertz(data): 
+            ''' 
+            Parameters: data from client's message 
+            Purpose: Updates a player's count of nertz
+            Effects: Emits cs_updated 
+            Returns: None
+            ''' 
             name = data.get("name")
             count = data.get("count")
             self.game.update_nertz_count(name, count)
@@ -125,6 +229,13 @@ class Server():
 
         @self.socketio.on("i_want_to_shuffle")
         def someone_wants_to_shuffle(data):
+            ''' 
+            Parameters: data from client's message 
+            Purpose: Registers a client as wanting to shuffle, if all players
+                want to shuffle, allows them
+            Effects: Emits allow_shuffle when applicable 
+            Returns: None
+            ''' 
             print("SOMEONE WANTS TO shuffle")
             with self.shuffle_mutex:
                 self.shuffle_count.add(data.get("name"))
@@ -133,6 +244,12 @@ class Server():
                     self.shuffle_count = set()
 
 def main(args): 
+    ''' 
+    Parameters: none
+    Purpose: Creates a Server object 
+    Effects: None
+    Returns: None
+    ''' 
     if len(args) != 2 and len(args) != 3: 
         print("Usage: server.py <num_players> [final_score]")
         sys.exit()

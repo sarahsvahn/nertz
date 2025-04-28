@@ -141,6 +141,12 @@ class Hand():
         return Origin.NOT_FOUND
     
     def validate_wp(self, pile):
+        ''' 
+        Parameters: pile - string name of pile 
+        Purpose: Ensure pile is a valid pile name 
+        Effects: None
+        Returns: Boolean - whether it's a valid pile or not 
+        ''' 
         if pile[:-1] == "wp":
             if pile[-1].isnumeric():
                 if int(pile[-1]) <= 4 and int(pile[-1]) > 0:
