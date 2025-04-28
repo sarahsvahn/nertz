@@ -1,4 +1,32 @@
-pip install flask flask-socketio
+Nertz 
+Cliodhna Reidy, Sarah Svahn, Owen Thomas 
+Tufts University
+CS 21 Concurrent Programming 
+Spring 2025 
 
-https://python-socketio.readthedocs.io/en/latest/api.html
-https://stackoverflow.com/questions/77360099/emitting-event-from-client-to-server-using-python-socketio-is-extremely-slow
+Packages to install: 
+- pip install flask flask-socketio
+- pip install requests 
+
+How to play: 
+- Real-time (no turns)
+- Objective: get rid of all 13 cards in your nertz pile 
+- Scoring: 1x (# of your cards in the community section) - 2x (# of cards in 
+  your nertz pile)
+- Acceptable input: 
+    - m [card] [pile]       move a card to a pile (ex. m qh cp2, m 5d wp3)
+    - s                     declare you want to shuffle, or shuffle 
+    - d                     draw 
+    - nertz                 declare you have nertz
+- Community piles: stack in ascending order of the same suit
+    - You can start a new pile with an ace at any time 
+- Working piles: stack in descending order of alternating colors
+    - Any card can move to an empty pile 
+- Draw pile: draws 3 at a time, you can access the top card only
+- Wikihow instructions: https://www.wikihow.com/Play-Nertz (note that community
+  piles are referred to as foundation piles)
+
+Sources: 
+- https://python-socketio.readthedocs.io/en/latest/api.html
+- https://stackoverflow.com/questions/77360099/emitting-event-from-client-to-server-using-python-socketio-is-extremely-slow
+- Brennan and Mark - thank you!!!

@@ -14,14 +14,13 @@ from card import Card
 import curses 
 from windows import Windows
 import time
-
+import sys
 
 class Client():
-    def __init__(self, stdscr):
+    def __init__(self, stdscr, url):
         self.sio = socketio.Client()
         self.cp_move_done = threading.Event()
-        self.server_url = "http://localhost:5000" 
-        # swap with whatever ip the server is running on to work on multiple VMs
+        self.server_url = url
         self.hand = Hand()
         self.windows = Windows(stdscr)
         self.event = threading.Event()
@@ -296,9 +295,9 @@ class Client():
             elif self.query == ['d']: 
                 self.hand.draw()
             elif self.query == ['s']:
-                self.handle_shuffle
+                self.handle_shuffle()
             elif self.query == ['nertz']:
-                self.handle_nertz
+                self.handle_nertz()
             else: 
                 self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
 
@@ -381,7 +380,11 @@ class Client():
         self.sio.connect(self.server_url)
 
 def main(stdscr):
-    client = Client(stdscr)
+    args = sys.argv
+    url = "http://localhost:8000"
+    if len(args) == 2: 
+        url = args[1]
+    client = Client(stdscr, url)
     client.connect()
     client.establish_player()
 

@@ -13,7 +13,7 @@ import threading
 from enums import Status
 import sys
 
-NERTZ_LEN = 3
+NERTZ_LEN = 13
 
 class Server(): 
     def __init__(self, num_players, score):
@@ -32,7 +32,7 @@ class Server():
 
         self.setup_handlers()
 
-        self.socketio.run(app, host='0.0.0.0', port=5000)
+        self.socketio.run(app, host='0.0.0.0', port=8000)
     
     def setup_handlers(self):   
         @self.socketio.on("connect")
