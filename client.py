@@ -208,7 +208,6 @@ class Client():
             self.print_scores(scores, data.get("nertz"), winner)
             
             self.windows.input_write("Game over!")
-            self.event.wait()
 
             self.thread = None
             self.query = None
