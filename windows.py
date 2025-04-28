@@ -4,6 +4,7 @@
 # This file contains the Windows class which represents the different windows
 # in the user’s terminal. It deals with printing to and receiving input
 # from different windows. 
+# 
 
 import threading
 import curses 
@@ -15,13 +16,6 @@ MAX_PLAYERS = 6
 
 class Windows():
     def __init__(self, stdscr):
-        ''' 
-        Parameters: stdscr needed for ncurses
-        Purpose: Initializes an object of the Windows class 
-        Effects: Initializes features of ncurses and color pairs, checks size of
-            user's screen and exits if too small 
-        Returns: New object of the Windows class
-        ''' 
         self.print_mutex = threading.Lock()
         
         stdscr.clear()
@@ -47,13 +41,6 @@ class Windows():
             sys.exit("Please make your terminal bigger and try again.")
     
     def init_windows(self, stdscr):
-        ''' 
-        Parameters: stdscr 
-        Purpose: Establishes the dimensions of each section of the terminal and
-            sets their borders 
-        Effects: None
-        Returns: None
-        ''' 
         height, width = stdscr.getmaxyx()
         self.height = height
         min_height = max(11 + 3 * MAX_PLAYERS, 19)
@@ -62,12 +49,9 @@ class Windows():
             return Status.FAILED_JOIN
         input_height = 3
         output_height = height - input_height * 2
-        
         self.hand_win = curses.newwin(output_height, int(width / 2), 0, 0)
-        self.community_win = curses.newwin(output_height, int(width / 2), 0, 
-                                           int(width / 2))
-        self.input_win = curses.newwin(input_height, width, output_height + 3, 
-                                       0)
+        self.community_win = curses.newwin(output_height, int(width / 2), 0, int(width / 2))
+        self.input_win = curses.newwin(input_height, width, output_height + 3, 0)
         self.error_win = curses.newwin(input_height, width, output_height, 0)
 
         self.hand_win.bkgd(' ', curses.color_pair(3))
@@ -90,15 +74,6 @@ class Windows():
             self.error_win.refresh()  
                         
     def write(self, window, str, y, x):
-        ''' 
-        Parameters: window - ncurses window to print to 
-                    str - string to write
-                    y - vertical position of window to write the string 
-                    x - horizontal position of window to write the string
-        Purpose: Clears and then prints a string to the window 
-        Effects: None
-        Returns: None
-        ''' 
         window.clear()
         window.border()
         if str == "> " or "HAND" in str or str == "COMMUNITY SECTION":
@@ -109,137 +84,55 @@ class Windows():
             window.refresh()
         
     def input_write(self, str, y = 1, x = 1):
-        ''' 
-        Parameters: str - string to write
-                    y - vertical position of window to write the string 
-                    x - horizontal position of window to write the string
-        Purpose: Prints a string to the input window 
-        Effects: None
-        Returns: None
-        ''' 
         self.write(self.input_win, str, y, x)
     
     def error_write(self, str, y = 1, x = 1):
-        ''' 
-        Parameters: str - string to write
-                    y - vertical position of window to write the string 
-                    x - horizontal position of window to write the string
-        Purpose: Prints a string to the error window 
-        Effects: None
-        Returns: None
-        ''' 
         self.write(self.error_win, str, y, x)
 
     def community_write(self, str, y = 1, x = 1):
-        ''' 
-        Parameters: str - string to write
-                    y - vertical position of window to write the string 
-                    x - horizontal position of window to write the string
-        Purpose: Prints a string to the community window 
-        Effects: None
-        Returns: None
-        ''' 
         self.write(self.community_win, str, y, x)
 
     @classmethod
     def read(cls, window):
-        ''' 
-        Parameters: window - ncurses window to be read from 
-        Purpose: Reads a string terminated by a newline from the window 
-        Effects: None
-        Returns: String that was read in 
-        ''' 
         return window.getstr().decode("utf-8")
 
     def input_read(self):
-        ''' 
-        Parameters: None
-        Purpose: Reads from the input window 
-        Effects: None
-        Returns: String that was read 
-        ''' 
         return Windows.read(self.input_win)
     
     def clear_and_refresh(self, window):
-        ''' 
-        Parameters: window - ncurses window 
-        Purpose: Clears and refreshes a window
-        Effects: None
-        Returns: None
-        ''' 
         window.clear()
         window.border()
         with self.print_mutex: 
             window.refresh()
 
     def input_refresh(self):
-        ''' 
-        Parameters: None
-        Purpose: Clears and refreshes the input window
-        Effects: None
-        Returns: None
-        ''' 
         self.clear_and_refresh(self.input_win)
 
     def hand_refresh(self):
-        ''' 
-        Parameters: None
-        Purpose: Clears and refreshes the hand window
-        Effects: None
-        Returns: None
-        ''' 
         self.clear_and_refresh(self.hand_win)
 
     def community_refresh(self):
-        ''' 
-        Parameters: None
-        Purpose: Clears and refreshes the community window
-        Effects: None
-        Returns: None
-        ''' 
         self.clear_and_refresh(self.community_win)
 
     def error_refresh(self): 
-        ''' 
-        Parameters: None
-        Purpose: Clears and refreshes the error window
-        Effects: None
-        Returns: None
-        ''' 
         self.clear_and_refresh(self.error_win)
 
     def print_board(self, hand, name, can_shuffle):
-        ''' 
-        Parameters: hand - Hand
-                    name - string of players name
-                    can_shuffle - Boolean saying whether the player is allowed
-                        to shuffle 
-        Purpose: Prints the players hand in the hand_win
-        Effects: Resets cursor to be in the input window at the end
-        Returns: None
-        ''' 
         self.hand_win.clear()
         self.hand_win.border()
 
         self.hand_win.addstr(1, 1, f"{name}'s HAND", curses.color_pair(4))
         Windows.print_cards(3, 1, [hand.top_nertz()], "nertz", self.hand_win)
         self.hand_win.addstr(4, 1, f"         {hand.count_nertz()}")
-        Windows.print_cards(6, 1, hand.get_wp(0).get_cards(), "wp1", 
-                            self.hand_win)
-        Windows.print_cards(7, 1, hand.get_wp(1).get_cards(), "wp2", 
-                            self.hand_win)
-        Windows.print_cards(8, 1, hand.get_wp(2).get_cards(), "wp3", 
-                            self.hand_win)
-        Windows.print_cards(9, 1, hand.get_wp(3).get_cards(), "wp4", 
-                            self.hand_win)
+        Windows.print_cards(6, 1, hand.get_wp(0).get_cards(), "wp1", self.hand_win)
+        Windows.print_cards(7, 1, hand.get_wp(1).get_cards(), "wp2", self.hand_win)
+        Windows.print_cards(8, 1, hand.get_wp(2).get_cards(), "wp3", self.hand_win)
+        Windows.print_cards(9, 1, hand.get_wp(3).get_cards(), "wp4", self.hand_win)
         Windows.print_cards(11, 1, hand.get_top3(), "draw pile", self.hand_win)
 
         if can_shuffle:
             bottom = self.height - 8
-            self.hand_win.addstr(bottom, 
-                                 1, 
-                                 f"Enter s to shuffle any time", 
-                                 curses.color_pair(5))
+            self.hand_win.addstr(bottom, 1, f"Enter s to shuffle any time", curses.color_pair(5))
 
         with self.print_mutex:
             self.hand_win.refresh()         
@@ -247,16 +140,6 @@ class Windows():
 
     @classmethod
     def print_cards(cls, y, x, cards, pile_name, window):
-        ''' 
-        Parameters: x - horizontal coordinate of the terminal 
-                    y - vertical coordinate of the terminal 
-                    cards - list of names of cards
-                    pile_name - name of the pile to be printed
-                    window - ncurses window to print to
-        Purpose: Prints all cards of a pile 
-        Effects: Prints
-        Returns: None
-        ''' 
         if pile_name == "nertz" or pile_name == "draw pile": 
             window.addstr(y, x, f"{pile_name}:  [")
             running_len = len(pile_name) + 4
@@ -266,16 +149,10 @@ class Windows():
         for i, card in enumerate(cards):
             if card.get_value() != 0:
                 if i == len(cards) - 1:
-                    window.addstr(y, 
-                                  x + running_len, 
-                                  f"{card}", 
-                                  curses.color_pair(card.get_color().value + 1))
+                    window.addstr(y, x + running_len, f"{card}", curses.color_pair(card.get_color().value + 1))
                     running_len += len(card.__repr__())
                 else:
-                    window.addstr(y, 
-                                  x + running_len, 
-                                  f"{card}, ", 
-                                  curses.color_pair(card.get_color().value + 1))
+                    window.addstr(y, x + running_len, f"{card}, ", curses.color_pair(card.get_color().value + 1))
                     running_len += len(card.__repr__()) + 2
         if pile_name == "draw pile":
             window.addstr(y + 1, x + len(pile_name + ":  ["), f"^")
@@ -283,16 +160,6 @@ class Windows():
 
     @classmethod
     def print_cp_cards(cls, y, x, cards, pile_names, window):
-        ''' 
-        Parameters: x - horizontal coordinate of the terminal 
-                    y - vertical coordinate of the terminal 
-                    cards - list of names of cards
-                    pile_names - list of pile names 
-                    window - ncurses window to print to (community_win)
-        Purpose: Prints one line of the community section 
-        Effects: None
-        Returns: None
-        ''' 
         real_cards = []
         running_len = 0
 
@@ -300,36 +167,22 @@ class Windows():
             real_cards.append(Card.card_with_name(card))
 
         for i in range(len(real_cards)):
-            window.addstr(y, x + running_len, f"[ {real_cards[i]} ]", 
-                          curses.color_pair(real_cards[i].get_color().value + 1)
-            )
+            window.addstr(y, x + running_len, f"[ {real_cards[i]} ]", curses.color_pair(real_cards[i].get_color().value + 1))
             window.addstr(y + 1, x + running_len + 2, f"{pile_names[i]}")
             running_len += len(real_cards[i].__repr__()) + 4
 
     def print_cs(self, board, nertz_changed):
-        ''' 
-        Parameters: board - 2D array of the community section
-                    nertz_changed - Boolean of whether someone's nertz score has
-                        changed
-        Purpose: Prints the community section to the corresponding window
-        Effects: Prints
-        Returns: None
-        ''' 
         self.community_win.clear()
         self.community_win.addstr(1, 1, board[0][0], curses.color_pair(4))
+        # self.community_win.addstr(2, 1, board[1][0], curses.color_pair(5))
         if not nertz_changed:
             self.last_move = board[1][0]
         self.community_win.addstr(2, 1, self.last_move, curses.color_pair(5))
 
         for i in range(0, len(board[3:]), 2):
-            Windows.print_cp_cards(i + 4, 
-                                   1, 
-                                   board[i + 3], 
-                                   board[i + 4], 
-                                   self.community_win)
-        self.community_win.addstr(len(board) + 2, 
-                                  1, board[2][0], 
-                                  curses.color_pair(5))
+            Windows.print_cp_cards(i + 4, 1, board[i + 3], board[i + 4], self.community_win)
+
+        self.community_win.addstr(len(board) + 2, 1, board[2][0], curses.color_pair(5))
         self.community_win.border()
         
         with self.print_mutex:  
@@ -337,35 +190,15 @@ class Windows():
             self.input_win.refresh()
     
     def print_scores(self, scores, name, winner = None):
-        ''' 
-        Parameters: scores - dictionary of names and scores
-                    name - string of the player who just got nertz
-                    winner - string of the winner of the game (if any)
-        Purpose: Prints scores to the community section window 
-        Effects: Prints 
-        Returns: None
-        ''' 
         self.community_win.clear()
         self.community_win.border()
         for i, player in enumerate(scores):
-            str = f"{player}: {scores[player][0]} + \
-            {scores[player][1]} = {scores[player][0] + scores[player][1]}"
-            self.community_win.addstr(i + 1, 1, str)
-        self.community_win.addstr(len(scores) + 2, 1, 
-                                  f"{name} got nertz!", 
-                                  curses.color_pair(5))
+            self.community_win.addstr(i + 1, 1, f"{player}: {scores[player][0]} + {scores[player][1]} = {scores[player][0] + scores[player][1]}")
+        self.community_win.addstr(len(scores) + 2, 1, f"{name} got nertz!", curses.color_pair(5))
         if winner != None:
-            self.community_win.addstr(len(scores) + 1, 
-                                      1, 
-                                      f"{winner} is the winner!")
+            self.community_win.addstr(len(scores) + 1, 1, f"{winner} is the winner!")
         with self.print_mutex: 
             self.community_win.refresh()        
 
     def end(self): 
-        ''' 
-        Parameters: None
-        Purpose: Shuts down the ncurses terminal window 
-        Effects: None
-        Returns: None
-        ''' 
         curses.endwin()

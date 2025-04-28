@@ -18,9 +18,9 @@ class WorkingPile():
     def get_cards(self): 
         ''' 
         Parameters: None
-        Purpose: Gets all cards of the workingPile
+        Purpose: Gets top card of the workingPile
         Effects: None
-        Returns: List of cards 
+        Returns: Top card of workingPile
         ''' 
         return self.cards
 
@@ -69,30 +69,12 @@ class WorkingPile():
         return Status.INVALID_MOVE
     
     def get_top_card(self):
-        ''' 
-        Parameters: None
-        Purpose: Gets top card of the working pile
-        Effects: None
-        Returns: Top card of working pile or a dummy card if its empty
-        ''' 
         if len(self.cards) == 0:
             return Card("S", 0) # empty card 
         return self.cards[-1]
 
     def in_pile(self, card):
-        ''' 
-        Parameters: Card
-        Purpose: Checks if card is in the working pile 
-        Effects: None
-        Returns: Boolean 
-        ''' 
         return card in self.cards
         
     def __repr__(self):
-        ''' 
-        Parameters: None
-        Purpose: Overwrites the representation of a working pile 
-        Effects: None
-        Returns: String of the list of cards 
-        ''' 
         return f"{self.cards}"

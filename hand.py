@@ -33,11 +33,21 @@ class Hand():
         Returns: None
         ''' 
         deck = Hand.generate_deck()
+        deck.remove(Card("S", 6))
+        deck.remove(Card("D", 1))
+        deck.remove(Card("C", 4))
+        deck.remove(Card("S", 1))
+        deck.remove(Card("H", 5))
         
-        self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
-                               WorkingPile(deck[2]), WorkingPile(deck[3])]
-        self.nertz_pile = deck[4:17] 
-        self.draw_pile = DrawPile(deck[17:])
+        self.working_piles = [WorkingPile(Card("S", 6)), WorkingPile(deck[1]),
+                              WorkingPile(deck[2]), WorkingPile(deck[3])]
+        # self.nertz_pile = deck[4:17] #TODO uncomment this line
+        # self.nertz_pile = deck[4:7]
+        self.nertz_pile = [Card("D", 1), Card("C", 4), Card("S", 1)] #TODO remove this line
+        # self.draw_pile = DrawPile(deck[17:])
+        deck.insert(len(deck) - 2, Card("H", 5))
+        self.draw_pile = DrawPile(deck[3:])
+        # self.score = 100 #-26
         self.score = -(len(self.nertz_pile) * 2)
     
     @staticmethod
@@ -52,7 +62,7 @@ class Hand():
         for i in range(1, 14):
             for j in range(4):
                 deck.append(Card(Suit(j).name, i))
-        random.shuffle(deck) 
+        random.shuffle(deck) #TODO Add back in when ready
         return deck 
     
     def shuffle(self):
@@ -131,12 +141,6 @@ class Hand():
         return Origin.NOT_FOUND
     
     def validate_wp(self, pile):
-        ''' 
-        Parameters: pile - string name of pile 
-        Purpose: Ensure pile is a valid pile name 
-        Effects: None
-        Returns: Boolean - whether it's a valid pile or not 
-        ''' 
         if pile[:-1] == "wp":
             if pile[-1].isnumeric():
                 if int(pile[-1]) <= 4 and int(pile[-1]) > 0:
@@ -156,6 +160,8 @@ class Hand():
             top_wp_card = self.working_piles[int(pile[-1]) - 1].get_top_card()
             if top_wp_card.get_value() != 0 and not top_wp_card.next_wp(card): 
                 return Status.INVALID_MOVE
+        else:
+            return Status.INVALID_MOVE
         
         new_cards = -1
         og_location = self.find_og_location(card, "WP")
