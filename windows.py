@@ -349,8 +349,9 @@ class Windows():
         self.community_win.clear()
         self.community_win.border()
         for i, player in enumerate(scores):
-            str = f"{player}: {scores[player][0]} + \
-            {scores[player][1]} = {scores[player][0] + scores[player][1]}"
+            str = f"{player}: {scores[player][0]} + "
+            str += f"{scores[player][1]} = "
+            str += f"{scores[player][0] + scores[player][1]}"
             self.community_win.addstr(i + 1, 1, str)
         self.community_win.addstr(len(scores) + 2, 1, 
                                   f"{name} got nertz!", 
