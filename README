@@ -30,3 +30,39 @@ Sources:
 - https://python-socketio.readthedocs.io/en/latest/api.html
 - https://stackoverflow.com/questions/77360099/emitting-event-from-client-to-server-using-python-socketio-is-extremely-slow
 - Brennan and Mark - thank you!!!
+
+File Guide: 
+- client.py: this file contains the client class and main functionality of 
+  Client. Handles connection to server, and handles the query loop in which a 
+  player enters their moves. Communicates directly with Server to play Game.
+- windows.py: this file contains the Windows class which represents the 
+  different windows in the user’s terminal. It deals with printing to and 
+  receiving input from different windows. 
+- hand.py: this file contains the Hand class which represents an individual 
+  user's playing cards. The cards are divided into four WorkingPiles, a nertz 
+  pile, and a DrawPile. Each player has a score which is updated as appropriate 
+  as cards are discarded/moved.
+- draw_pile.py: this file contains the DrawPile class which represents the pile 
+  of cards that a player uses to draw from. The only instance of the DrawPile 
+  class exists in the Hand class. The DrawPile has two piles of cards, face_up 
+  and face_down to simulate actual gameplay. 
+- working_pile.py: this file contains the WorkingPile class which represents one
+  working pile as a list of Cards. There are four instances of the WorkingPile 
+  in the Hand class. Working piles may be added to from any other piles in a 
+  Hand. Cards must appear in decreasing order with alternating colors 
+  (black/red).
+- flask_server.py: this file contains the Server class which handles the main 
+  functionality of the flask server. It communicates directly with 1 or more 
+  clients to play the game. 
+- game.py: this file contains the main logic for the game. The Game stores the 
+  player's scores and initializes and adds to the CommunitySection 
+- community_section.py: this file contains the CommunitySection class which 
+  represents the concurrent, multiplayer section of our game. It has a list of 
+  CommunityPiles and a lock protecting access to that list.
+- community_pile.py: this file contains the CommunityPile class which represents
+  one pile in the community section. A CommunityPile has a list of cards, a 
+  suit, and a mutex that protects adding to it.
+- card.py: this file contains the Card class which represents a playing card, 
+  which has a suit, value, and color. Two cards are equal if they have the same
+  value and suit
+
