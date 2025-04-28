@@ -296,9 +296,9 @@ class Client():
             elif self.query == ['d']: 
                 self.hand.draw()
             elif self.query == ['s']:
-                self.handle_shuffle
+                self.handle_shuffle()
             elif self.query == ['nertz']:
-                self.handle_nertz
+                self.handle_nertz()
             else: 
                 self.windows.error_write("Usage: m <card> <pile> | m <ace> cp | d | s | nertz")
 

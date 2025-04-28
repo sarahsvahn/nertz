@@ -13,7 +13,7 @@ import threading
 from enums import Status
 import sys
 
-NERTZ_LEN = 3
+NERTZ_LEN = 13
 
 class Server(): 
     def __init__(self, num_players, score):
