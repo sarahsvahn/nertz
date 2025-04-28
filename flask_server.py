@@ -1,6 +1,3 @@
-# Update running server so that player count and total score are command line 
-# args instead of prompts. Allow total score to default to 100 if not provided
-
 # flask_server.py
 # Authors: Cliodhna Reidy, Sarah Svahn, Owen Thomas
 # 
