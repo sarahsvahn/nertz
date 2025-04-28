@@ -381,7 +381,7 @@ class Client():
 
 def main(stdscr):
     args = sys.argv
-    url = "http://localhost:8000"
+    url = "http://localhost:8080"
     if len(args) == 2: 
         url = args[1]
     client = Client(stdscr, url)

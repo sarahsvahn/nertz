@@ -34,17 +34,23 @@ class CommunitySection():
         self.piles_count = 0
 
     def add_to_pile(self, card, pile_name="new_pile"):
+        print("card value: ", card.get_value())
         if card.get_value() == 1:
             self.start_new_pile(card)
             return Status.SUCCESS
         else: 
             if pile_name[2:].isnumeric():
+                print("pile name: ", pile_name[2:])
                 pile_idx = int(pile_name[2:]) - 1
+                # invalid = False
                 with self.count_mutex:
                     if pile_idx >= self.piles_count:
                         return Status.INVALID_MOVE
+                # if invalid:
+                #     
             else:
                 return Status.INVALID_MOVE
+            print("here? ")
             return self.piles[pile_idx].add_to_pile(card)
 
     def start_new_pile(self, card):

@@ -38,7 +38,7 @@ class Server():
 
         self.setup_handlers()
 
-        self.socketio.run(app, host='0.0.0.0', port=8000)
+        self.socketio.run(app, host='0.0.0.0', port=8080)
     
     def setup_handlers(self):   
         ''' 

@@ -23,7 +23,18 @@ class CommunityPile():
         ''' 
         with self.pile_lock:
             return self.cards[-1]
-        
+    
+    def get_top_card_non_atomic(self): 
+        ''' 
+        Parameters: None
+        Purpose: Gets the top card of the community pile without the lock for 
+                 internal use
+        Effects: None
+        Returns: The top card in the pile
+        ''' 
+        print("cards: ", self.cards[-1])
+        return self.cards[-1]
+
     def add_to_pile(self, card):
         ''' 
         Parameters: card - the card to add to the pile
@@ -33,7 +44,7 @@ class CommunityPile():
                  pile or INVALID_MOVE otherwise
         ''' 
         with self.pile_lock:
-            if self.get_top_card().next_cp(card):
+            if self.get_top_card_non_atomic().next_cp(card):
                 self.cards.append(card)
                 return Status.SUCCESS
             else:
