@@ -1,9 +1,9 @@
 # community_pile.py
 # Authors: Cliodhna Reidy, Sarah Svahn, Owen Thomas
 # 
-# This file handles the community pile, a card data structure that has solely
-# atomic operations and enforces restraints on card ordering
-# 
+# This file contains the CommunityPile class which represents one pile in the 
+# community section. A CommunityPile has a list of cards, a suit, and a mutex
+# that protects adding to it. 
 
 from enums import Suit, Status
 import threading

@@ -4,7 +4,7 @@
 # This file contains the hand class which represents an individual user's 
 # playing cards. The cards are divided into four working piles, a 
 # nertz pile, and a draw pile. Each player has a score which is updated
-# as appropriate as cards as discarded/moved.
+# as appropriate as cards are discarded/moved.
 # 
 
 from working_pile import WorkingPile
@@ -33,14 +33,11 @@ class Hand():
         Returns: None
         ''' 
         deck = Hand.generate_deck()
+        
         self.working_piles = [WorkingPile(deck[0]), WorkingPile(deck[1]),
-                              WorkingPile(deck[2]), WorkingPile(deck[3])]
-        # self.nertz_pile = deck[4:17] #TODO uncomment this line
-        self.nertz_pile = deck[4:7]
-        # self.nertz_pile = [Card("D", "2"), Card("D", "1")] #TODO remove this line
-        # self.draw_pile = DrawPile(deck[17:])
-        self.draw_pile = DrawPile(deck[7:])
-        # self.score = 100 #-26
+                               WorkingPile(deck[2]), WorkingPile(deck[3])]
+        self.nertz_pile = deck[4:17] 
+        self.draw_pile = DrawPile(deck[17:])
         self.score = -(len(self.nertz_pile) * 2)
     
     @staticmethod
@@ -55,7 +52,7 @@ class Hand():
         for i in range(1, 14):
             for j in range(4):
                 deck.append(Card(Suit(j).name, i))
-        random.shuffle(deck) #TODO Add back in when ready
+        random.shuffle(deck) 
         return deck 
     
     def shuffle(self):
@@ -134,6 +131,12 @@ class Hand():
         return Origin.NOT_FOUND
     
     def validate_wp(self, pile):
+        ''' 
+        Parameters: pile - string name of pile 
+        Purpose: Ensure pile is a valid pile name 
+        Effects: None
+        Returns: Boolean - whether it's a valid pile or not 
+        ''' 
         if pile[:-1] == "wp":
             if pile[-1].isnumeric():
                 if int(pile[-1]) <= 4 and int(pile[-1]) > 0:
